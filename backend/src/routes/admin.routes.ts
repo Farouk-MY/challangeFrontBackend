@@ -9,6 +9,12 @@ import {
     getCustomerStats,
 } from '../controllers/admin.controller';
 import { authenticate, authorize } from '../middleware/auth';
+import {
+    getAllUsers,
+    getUserById,
+    updateUserRole,
+    deleteUser,
+} from '../controllers/admin-users.controller';
 
 const router = Router();
 
@@ -23,5 +29,10 @@ router.get('/dashboard/recent-orders', getRecentOrders);
 router.get('/dashboard/low-stock', getLowStockProducts);
 router.get('/dashboard/revenue-by-category', getRevenueByCategory);
 router.get('/dashboard/customer-stats', getCustomerStats);
+
+router.get('/users', getAllUsers);
+router.get('/users/:id', getUserById);
+router.put('/users/:id/role', updateUserRole);
+router.delete('/users/:id', deleteUser);
 
 export default router;

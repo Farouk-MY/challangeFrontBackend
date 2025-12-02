@@ -12,8 +12,9 @@ export * from './useOrders';
 
 export * from './useUsers';
 
-// Note: Add more hooks exports as we create them
-// - useCategories
+export * from './useCategories';
+
+
 // - useWishlist
 // - useReviews
 // - useUsers

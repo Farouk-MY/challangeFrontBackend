@@ -6,8 +6,6 @@ import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { QueryProvider } from "@/providers/query-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
-import Navbar from "@/components/shared/Navbar";
-import Footer from "@/components/shared/Footer";
 import { Toaster } from "sonner";
 import "../globals.css";
 
@@ -51,13 +49,8 @@ export default async function LocaleLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <NextIntlClientProvider messages={messages}>
                 <QueryProvider>
-                    <div className="flex flex-col min-h-screen">
-                        <Navbar />
-                        <main className="flex-1">
-                            {children}
-                        </main>
-                        <Footer />
-                    </div>
+                    {/* ✅ Just render children - each route group has its own layout */}
+                    {children}
                     <Toaster position="top-right" richColors />
                 </QueryProvider>
             </NextIntlClientProvider>
