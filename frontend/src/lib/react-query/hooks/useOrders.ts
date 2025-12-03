@@ -23,9 +23,10 @@ export const useOrder = (id: string) => {
 };
 
 // Create order
+// In useOrders.ts - Update the useCreateOrder hook
 export const useCreateOrder = () => {
-    const router = useRouter();
     const queryClient = useQueryClient();
+    // ❌ Remove router and router.push
 
     return useMutation({
         mutationFn: ordersApi.create,
@@ -33,8 +34,7 @@ export const useCreateOrder = () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.orders.user() });
             queryClient.invalidateQueries({ queryKey: queryKeys.cart.get });
             toast.success('Order placed successfully!');
-            // Redirect to success page with order ID
-            router.push(`/orders/success?orderId=${data.data?.order.id}`);
+            // ✅ Don't redirect here - let the checkout page handle it
         },
         onError: (error: any) => {
             toast.error(error.response?.data?.message || 'Failed to create order');

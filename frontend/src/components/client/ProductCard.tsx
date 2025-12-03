@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { Heart, ShoppingCart, Eye } from 'lucide-react';
 import { Product } from '@/types';
 import { useAddToCart } from '@/lib/react-query/hooks/useCart';
+import { useCheckWishlist, useToggleWishlist } from '@/lib/react-query/hooks/useWishlist';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
@@ -18,9 +19,16 @@ export default function ProductCard({ product }: ProductCardProps) {
     const t = useTranslations();
     const locale = useLocale();
     const [imageLoaded, setImageLoaded] = useState(false);
-    const [isWishlisted, setIsWishlisted] = useState(false);
 
     const { mutate: addToCart, isPending: addingToCart } = useAddToCart();
+
+    // Check if product is in wishlist
+    const { data: wishlistCheck } = useCheckWishlist(product.id);
+    const isWishlisted = wishlistCheck?.data?.inWishlist || false;
+    const wishlistId = wishlistCheck?.data?.wishlistId;
+
+    // Toggle wishlist mutation
+    const { mutate: toggleWishlist, isPending: togglingWishlist } = useToggleWishlist();
 
     const productName = locale === 'ar' && product.nameAr ? product.nameAr : product.name;
     const productImage = product.images[0] || '/placeholder.png';
@@ -38,10 +46,11 @@ export default function ProductCard({ product }: ProductCardProps) {
 
     const handleWishlist = (e: React.MouseEvent) => {
         e.preventDefault();
-        setIsWishlisted(!isWishlisted);
-        toast.success(
-            isWishlisted ? 'Removed from wishlist' : t('cart.itemAdded')
-        );
+        toggleWishlist({
+            productId: product.id,
+            isInWishlist: isWishlisted,
+            wishlistId: wishlistId,
+        });
     };
 
     return (
@@ -69,18 +78,18 @@ export default function ProductCard({ product }: ProductCardProps) {
                     <div className="absolute top-3 left-3 flex flex-col gap-2">
                         {product.featured && (
                             <span className="badge-info">
-                {t('products.featured')}
-              </span>
+                                {t('products.featured')}
+                            </span>
                         )}
                         {isOutOfStock && (
                             <span className="badge-danger">
-                {t('products.outOfStock')}
-              </span>
+                                {t('products.outOfStock')}
+                            </span>
                         )}
                         {isLowStock && (
                             <span className="badge-warning">
-                Low Stock
-              </span>
+                                Low Stock
+                            </span>
                         )}
                     </div>
 
@@ -90,6 +99,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
                             onClick={handleWishlist}
+                            disabled={togglingWishlist}
                             className={`p-2 rounded-full backdrop-blur-sm transition-colors ${
                                 isWishlisted
                                     ? 'bg-red-500 text-white'
@@ -162,21 +172,17 @@ export default function ProductCard({ product }: ProductCardProps) {
                                 ))}
                             </div>
                             <span className="text-xs text-muted-foreground">
-                ({product.reviews.length})
-              </span>
+                                ({product.reviews.length})
+                            </span>
                         </div>
                     )}
 
                     {/* Price */}
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-              <span className="text-xl font-bold text-green-600 dark:text-green-400">
-                ${product.price.toFixed(2)}
-              </span>
-                            {/* Show old price if on sale */}
-                            {/* <span className="text-sm line-through text-muted-foreground">
-                $99.99
-              </span> */}
+                            <span className="text-xl font-bold text-green-600 dark:text-green-400">
+                                ${product.price.toFixed(2)}
+                            </span>
                         </div>
 
                         {/* Stock Indicator */}
@@ -191,12 +197,12 @@ export default function ProductCard({ product }: ProductCardProps) {
                                 }`}
                             />
                             <span className="text-xs text-muted-foreground">
-                {isOutOfStock
-                    ? t('products.outOfStock')
-                    : isLowStock
-                        ? `${product.stock} left`
-                        : t('products.inStock')}
-              </span>
+                                {isOutOfStock
+                                    ? t('products.outOfStock')
+                                    : isLowStock
+                                        ? `${product.stock} left`
+                                        : t('products.inStock')}
+                            </span>
                         </div>
                     </div>
                 </div>

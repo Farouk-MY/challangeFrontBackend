@@ -22,7 +22,7 @@ export const useMe = () => {
 
 // Register mutation
 export const useRegister = () => {
-    const router = useRouter();
+    //const router = useRouter();
     const queryClient = useQueryClient();
 
     return useMutation({
@@ -34,7 +34,7 @@ export const useRegister = () => {
                 data: { user: data.data?.user },
             });
             toast.success('Account created successfully!');
-            router.push('/');
+            //router.push('/');
         },
         onError: (error: any) => {
             toast.error(error.response?.data?.message || 'Registration failed');

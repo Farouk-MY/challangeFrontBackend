@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
 import { Link } from '@/i18n/routing';
-import { useRegister } from '@/lib/react-query/hooks';
+import { useRegister, useSendVerificationEmail } from '@/lib/react-query/hooks';
 import { registerSchema, type RegisterInput } from '@/lib/validations/auth.validation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,7 +38,11 @@ export default function RegisterPage() {
     const { theme, setTheme } = useTheme();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [registrationComplete, setRegistrationComplete] = useState(false);
+    const [userEmail, setUserEmail] = useState('');
+
     const { mutate: register, isPending } = useRegister();
+    const { mutate: sendVerificationEmail } = useSendVerificationEmail();
 
     const {
         register: registerField,
@@ -59,12 +63,76 @@ export default function RegisterPage() {
     ];
 
     const onSubmit = (data: RegisterInput) => {
-        register(data);
+        setUserEmail(data.email);
+        register(data, {
+            onSuccess: () => {
+                // Send verification email after successful registration
+                sendVerificationEmail();
+                setRegistrationComplete(true);
+            },
+        });
     };
+
+    // Show verification message after registration
+    if (registrationComplete) {
+        return (
+            <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-8 border border-slate-200 dark:border-slate-800 max-w-md w-full"
+                >
+                    <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 0.2, type: 'spring' }}
+                        className="w-20 h-20 mx-auto bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-6"
+                    >
+                        <Mail className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+                    </motion.div>
+
+                    <div className="text-center space-y-4">
+                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                            Verify Your Email
+                        </h1>
+                        <p className="text-slate-600 dark:text-slate-400">
+                            We've sent a verification link to{' '}
+                            <span className="font-semibold text-slate-900 dark:text-white">
+                                {userEmail}
+                            </span>
+                        </p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                            Click the link in the email to verify your account and start shopping!
+                        </p>
+                    </div>
+
+                    <div className="mt-8 space-y-3">
+                        <Button className="w-full gradient-primary" asChild>
+                            <Link href="/login">
+                                Continue to Login
+                                <ArrowRight className="w-4 h-4 ml-2" />
+                            </Link>
+                        </Button>
+
+                        <Button
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => sendVerificationEmail()}
+                        >
+                            Resend Verification Email
+                        </Button>
+                    </div>
+
+                    <p className="text-center text-xs text-slate-500 dark:text-slate-400 mt-6">
+                        Didn't receive the email? Check your spam folder or click resend.
+                    </p>
+                </motion.div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
-
             {/* Register Card */}
             <motion.div
                 initial="hidden"

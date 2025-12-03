@@ -14,9 +14,10 @@ export * from './useUsers';
 
 export * from './useCategories';
 
+export * from './useWishlist';
 
-// - useWishlist
+
+
 // - useReviews
-// - useUsers
 // - useContact
 // - useAdmin

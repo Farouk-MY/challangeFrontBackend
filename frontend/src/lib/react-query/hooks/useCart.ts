@@ -3,36 +3,42 @@ import { useRouter } from 'next/navigation';
 import { cartApi, productsApi } from '@/lib/api';
 import { queryKeys } from '@/lib/react-query/client';
 import { guestCartManager } from '@/lib/utils/guestCart';
+import { useMe } from './useAuth'; // Import useMe
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 
 // Get cart - works for both authenticated and guest users
 export const useCart = () => {
+    const { data: userData } = useMe(); // Get user data
+    const user = userData?.data?.user;
+
     const hasToken = typeof window !== 'undefined' &&
         !!localStorage.getItem('accessToken');
 
-    // For authenticated users - fetch from API
+    // Only fetch from API if user is logged in AND is not an admin
+    const shouldFetchFromAPI = hasToken && user && user.role !== 'ADMIN';
+
+    // For authenticated users (non-admin) - fetch from API
     const apiCart = useQuery({
         queryKey: queryKeys.cart.get,
         queryFn: cartApi.get,
-        enabled: hasToken,
+        enabled: shouldFetchFromAPI, // ✅ Only run if non-admin user
         retry: false,
     });
 
-    // For guest users - use localStorage
+    // For guest users or admins - use localStorage
     const [guestCart, setGuestCart] = useState<any>(null);
     const [isLoadingGuest, setIsLoadingGuest] = useState(true);
 
     useEffect(() => {
-        if (!hasToken && typeof window !== 'undefined') {
-            // Load guest cart and fetch product details
+        // Load guest cart if user is not logged in OR if user is admin
+        if (!hasToken || (user && user.role === 'ADMIN')) {
             const loadGuestCart = async () => {
                 setIsLoadingGuest(true);
                 const cart = guestCartManager.getCart();
 
                 if (cart.items.length > 0) {
                     try {
-                        // Fetch product details for each item
                         const itemsWithProducts = await Promise.all(
                             cart.items.map(async (item) => {
                                 try {
@@ -94,11 +100,13 @@ export const useCart = () => {
             };
 
             loadGuestCart();
+        } else {
+            setIsLoadingGuest(false);
         }
-    }, [hasToken]);
+    }, [hasToken, user]);
 
-    // Return API cart for authenticated users, guest cart for others
-    if (hasToken) {
+    // Return API cart for non-admin authenticated users, guest cart for others
+    if (shouldFetchFromAPI) {
         return apiCart;
     }
 
@@ -113,25 +121,30 @@ export const useCart = () => {
 // Add to cart - works for both authenticated and guest
 export const useAddToCart = () => {
     const queryClient = useQueryClient();
+    const { data: userData } = useMe();
+    const user = userData?.data?.user;
+
     const hasToken = typeof window !== 'undefined' &&
         !!localStorage.getItem('accessToken');
 
+    // Only use API if user is logged in AND not an admin
+    const shouldUseAPI = hasToken && user && user.role !== 'ADMIN';
+
     return useMutation({
         mutationFn: async (data: { productId: string; quantity: number }) => {
-            if (hasToken) {
-                // Authenticated - use API
+            if (shouldUseAPI) {
+                // Authenticated non-admin - use API
                 return await cartApi.addItem(data);
             } else {
-                // Guest - use localStorage
+                // Guest or admin - use localStorage
                 guestCartManager.addItem(data.productId, data.quantity);
                 return { success: true };
             }
         },
         onSuccess: () => {
-            if (hasToken) {
+            if (shouldUseAPI) {
                 queryClient.invalidateQueries({ queryKey: queryKeys.cart.get });
             } else {
-                // Force re-render by invalidating
                 window.dispatchEvent(new Event('guest-cart-updated'));
             }
             toast.success('Added to cart!');
@@ -145,12 +158,17 @@ export const useAddToCart = () => {
 // Update cart item
 export const useUpdateCartItem = () => {
     const queryClient = useQueryClient();
+    const { data: userData } = useMe();
+    const user = userData?.data?.user;
+
     const hasToken = typeof window !== 'undefined' &&
         !!localStorage.getItem('accessToken');
 
+    const shouldUseAPI = hasToken && user && user.role !== 'ADMIN';
+
     return useMutation({
         mutationFn: async ({ id, quantity }: { id: string; quantity: number }) => {
-            if (hasToken) {
+            if (shouldUseAPI) {
                 return await cartApi.updateItem(id, { quantity });
             } else {
                 guestCartManager.updateItem(id, quantity);
@@ -158,7 +176,7 @@ export const useUpdateCartItem = () => {
             }
         },
         onSuccess: () => {
-            if (hasToken) {
+            if (shouldUseAPI) {
                 queryClient.invalidateQueries({ queryKey: queryKeys.cart.get });
             } else {
                 window.dispatchEvent(new Event('guest-cart-updated'));
@@ -173,12 +191,17 @@ export const useUpdateCartItem = () => {
 // Remove from cart
 export const useRemoveFromCart = () => {
     const queryClient = useQueryClient();
+    const { data: userData } = useMe();
+    const user = userData?.data?.user;
+
     const hasToken = typeof window !== 'undefined' &&
         !!localStorage.getItem('accessToken');
 
+    const shouldUseAPI = hasToken && user && user.role !== 'ADMIN';
+
     return useMutation({
         mutationFn: async (id: string) => {
-            if (hasToken) {
+            if (shouldUseAPI) {
                 return await cartApi.removeItem(id);
             } else {
                 guestCartManager.removeItem(id);
@@ -186,7 +209,7 @@ export const useRemoveFromCart = () => {
             }
         },
         onSuccess: () => {
-            if (hasToken) {
+            if (shouldUseAPI) {
                 queryClient.invalidateQueries({ queryKey: queryKeys.cart.get });
             } else {
                 window.dispatchEvent(new Event('guest-cart-updated'));
@@ -202,12 +225,17 @@ export const useRemoveFromCart = () => {
 // Clear cart
 export const useClearCart = () => {
     const queryClient = useQueryClient();
+    const { data: userData } = useMe();
+    const user = userData?.data?.user;
+
     const hasToken = typeof window !== 'undefined' &&
         !!localStorage.getItem('accessToken');
 
+    const shouldUseAPI = hasToken && user && user.role !== 'ADMIN';
+
     return useMutation({
         mutationFn: async () => {
-            if (hasToken) {
+            if (shouldUseAPI) {
                 return await cartApi.clear();
             } else {
                 guestCartManager.clearCart();
@@ -215,7 +243,7 @@ export const useClearCart = () => {
             }
         },
         onSuccess: () => {
-            if (hasToken) {
+            if (shouldUseAPI) {
                 queryClient.invalidateQueries({ queryKey: queryKeys.cart.get });
             } else {
                 window.dispatchEvent(new Event('guest-cart-updated'));
@@ -231,9 +259,17 @@ export const useClearCart = () => {
 // Sync guest cart with user cart after login
 export const useSyncGuestCart = () => {
     const queryClient = useQueryClient();
+    const { data: userData } = useMe();
+    const user = userData?.data?.user;
 
     return useMutation({
         mutationFn: async () => {
+            // Only sync if user is not an admin
+            if (user?.role === 'ADMIN') {
+                guestCartManager.clearCart();
+                return { success: true, message: 'Admin users do not sync cart' };
+            }
+
             const guestCart = guestCartManager.getCart();
 
             if (guestCart.items.length === 0) {

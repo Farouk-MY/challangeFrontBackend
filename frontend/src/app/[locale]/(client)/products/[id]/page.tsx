@@ -3,7 +3,7 @@
 import { useState, use } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/i18n/routing';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
     Heart,
     ShoppingCart,
@@ -17,10 +17,10 @@ import {
 } from 'lucide-react';
 import { useProduct } from '@/lib/react-query/hooks/useProducts';
 import { useAddToCart } from '@/lib/react-query/hooks/useCart';
+import { useCheckWishlist, useToggleWishlist } from '@/lib/react-query/hooks/useWishlist';
 import { Button } from '@/components/ui/button';
 import { LoadingPage } from '@/components/shared/LoadingSpinner';
 import ErrorDisplay from '@/components/shared/ErrorBoundary';
-import ProductCard from '@/components/client/ProductCard';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -37,10 +37,15 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
 
     const [selectedImage, setSelectedImage] = useState(0);
     const [quantity, setQuantity] = useState(1);
-    const [isWishlisted, setIsWishlisted] = useState(false);
 
     const { data, isLoading, error } = useProduct(id);
     const { mutate: addToCart, isPending: addingToCart } = useAddToCart();
+
+    // Wishlist hooks
+    const { data: wishlistCheck } = useCheckWishlist(id);
+    const isWishlisted = wishlistCheck?.data?.inWishlist || false;
+    const wishlistId = wishlistCheck?.data?.wishlistId;
+    const { mutate: toggleWishlist, isPending: togglingWishlist } = useToggleWishlist();
 
     if (isLoading) return <LoadingPage />;
     if (error) return <ErrorDisplay title="Product not found" />;
@@ -66,6 +71,14 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
         if (newQuantity >= 1 && newQuantity <= product.stock) {
             setQuantity(newQuantity);
         }
+    };
+
+    const handleWishlist = () => {
+        toggleWishlist({
+            productId: product.id,
+            isInWishlist: isWishlisted,
+            wishlistId: wishlistId,
+        });
     };
 
     // Calculate average rating
@@ -170,17 +183,16 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                     ))}
                                 </div>
                                 <span className="text-sm text-muted-foreground">
-                  {averageRating.toFixed(1)} ({product.reviews.length} reviews)
-                </span>
+                                    {averageRating.toFixed(1)} ({product.reviews.length} reviews)
+                                </span>
                             </div>
                         )}
 
                         {/* Price */}
                         <div className="flex items-baseline gap-3">
-              <span className="text-4xl font-bold text-green-600 dark:text-green-400">
-                ${product.price.toFixed(2)}
-              </span>
-                            {/* Add sale price logic if needed */}
+                            <span className="text-4xl font-bold text-green-600 dark:text-green-400">
+                                ${product.price.toFixed(2)}
+                            </span>
                         </div>
 
                         {/* Description Preview */}
@@ -215,8 +227,8 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                     </Button>
                                 </div>
                                 <span className="text-sm text-muted-foreground">
-                  {product.stock} available
-                </span>
+                                    {product.stock} available
+                                </span>
                             </div>
                         </div>
 
@@ -240,7 +252,8 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                             <Button
                                 size="lg"
                                 variant="outline"
-                                onClick={() => setIsWishlisted(!isWishlisted)}
+                                onClick={handleWishlist}
+                                disabled={togglingWishlist}
                                 className={isWishlisted ? 'bg-red-50 dark:bg-red-950 border-red-200' : ''}
                             >
                                 <Heart
