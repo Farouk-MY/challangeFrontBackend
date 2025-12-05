@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { motion } from 'framer-motion';
 import { Link } from '@/i18n/routing';
 import ProtectedRoute from "@/components/shared/ProtectedRoute";
@@ -17,6 +17,8 @@ import {
     Plus,
     Trash2,
     Check,
+    Eye,
+    EyeOff,
 } from 'lucide-react';
 import { useMe } from '@/lib/react-query/hooks';
 import {
@@ -26,6 +28,9 @@ import {
     useDeleteAddress,
     useSetDefaultAddress,
 } from '@/lib/react-query/hooks/useUsers';
+import { useChangePassword, useSendVerificationEmail } from '@/lib/react-query/hooks/useAuth';
+import { useUserOrders } from '@/lib/react-query/hooks/useOrders';
+import { useWishlist } from '@/lib/react-query/hooks/useWishlist';
 import { LoadingPage } from '@/components/shared/LoadingSpinner';
 import ErrorDisplay from '@/components/shared/ErrorBoundary';
 import { Button } from '@/components/ui/button';
@@ -50,10 +55,17 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+
 export default function ProfilePage() {
     const t = useTranslations();
+    const locale = useLocale();
     const [editingProfile, setEditingProfile] = useState(false);
     const [addingAddress, setAddingAddress] = useState(false);
+    const [changingPassword, setChangingPassword] = useState(false);
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
     const [profileData, setProfileData] = useState({ name: '', avatar: '' });
     const [addressData, setAddressData] = useState({
         name: '',
@@ -65,19 +77,30 @@ export default function ProfilePage() {
         zipCode: '',
         isDefault: false,
     });
+    const [passwordData, setPasswordData] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+    });
 
     // Queries
     const { data: userData, isLoading: userLoading } = useMe();
     const { data: addressesData, isLoading: addressesLoading } = useAddresses();
+    const { data: ordersData, isLoading: ordersLoading } = useUserOrders();
+    const { data: wishlistData, isLoading: wishlistLoading } = useWishlist();
 
     // Mutations
     const { mutate: updateProfile, isPending: updatingProfile } = useUpdateProfile();
     const { mutate: createAddress, isPending: creatingAddress } = useCreateAddress();
     const { mutate: deleteAddress } = useDeleteAddress();
     const { mutate: setDefaultAddress } = useSetDefaultAddress();
+    const { mutate: changePassword, isPending: changingPasswordLoading } = useChangePassword();
+    const { mutate: sendVerificationEmail, isPending: sendingVerification } = useSendVerificationEmail();
 
     const user = userData?.data?.user;
     const addresses = addressesData?.data?.addresses || [];
+    const orders = ordersData?.data?.orders || [];
+    const wishlist = wishlistData?.data?.wishlist || [];
 
     if (userLoading) return <LoadingPage />;
     if (!user) return <ErrorDisplay title="Please login to view your profile" />;
@@ -109,25 +132,63 @@ export default function ProfilePage() {
         });
     };
 
+    const handleChangePassword = () => {
+        // Validate passwords match
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            return; // Error will be shown in UI
+        }
+
+        // Validate password length
+        if (passwordData.newPassword.length < 6) {
+            return; // Error will be shown in UI
+        }
+
+        changePassword({
+            currentPassword: passwordData.currentPassword,
+            newPassword: passwordData.newPassword,
+        }, {
+            onSuccess: () => {
+                setChangingPassword(false);
+                setPasswordData({
+                    currentPassword: '',
+                    newPassword: '',
+                    confirmPassword: '',
+                });
+            },
+        });
+    };
+
+    const handleSendVerification = () => {
+        sendVerificationEmail();
+    };
+
+    const passwordsMatch = passwordData.newPassword === passwordData.confirmPassword;
+    const passwordLengthValid = passwordData.newPassword.length >= 6 || passwordData.newPassword.length === 0;
+    const canSubmitPassword = passwordData.currentPassword &&
+        passwordData.newPassword &&
+        passwordData.confirmPassword &&
+        passwordsMatch &&
+        passwordLengthValid;
+
     const stats = [
         {
             icon: Package,
-            label: 'Total Orders',
-            value: '0',
+            label: t('profile.totalOrders') || 'Total Orders',
+            value: ordersLoading ? '...' : orders.length.toString(),
             color: 'text-blue-600 dark:text-blue-400',
             bgColor: 'bg-blue-100 dark:bg-blue-900/30',
         },
         {
             icon: Heart,
-            label: 'Wishlist Items',
-            value: '0',
+            label: t('profile.wishlistItems') || 'Wishlist Items',
+            value: wishlistLoading ? '...' : wishlist.length.toString(),
             color: 'text-red-600 dark:text-red-400',
             bgColor: 'bg-red-100 dark:bg-red-900/30',
         },
         {
             icon: MapPin,
-            label: 'Addresses',
-            value: addresses.length.toString(),
+            label: t('profile.addresses') || 'Addresses',
+            value: addressesLoading ? '...' : addresses.length.toString(),
             color: 'text-green-600 dark:text-green-400',
             bgColor: 'bg-green-100 dark:bg-green-900/30',
         },
@@ -179,7 +240,7 @@ export default function ProfilePage() {
                                         variant={user.isVerified ? 'default' : 'outline'}
                                         className={user.isVerified ? 'bg-green-500' : ''}
                                     >
-                                        {user.isVerified ? 'Verified' : 'Not Verified'}
+                                        {user.isVerified ? (t('profile.verified') || 'Verified') : (t('profile.notVerified') || 'Not Verified')}
                                     </Badge>
                                 </div>
                             </div>
@@ -189,29 +250,29 @@ export default function ProfilePage() {
                                 <DialogTrigger asChild>
                                     <Button variant="secondary" onClick={() => setProfileData({ name: user.name, avatar: user.avatar || '' })}>
                                         <Edit className="w-4 h-4 mr-2" />
-                                        Edit Profile
+                                        {t('profile.editProfile')}
                                     </Button>
                                 </DialogTrigger>
                                 <DialogContent>
                                     <DialogHeader>
-                                        <DialogTitle>Edit Profile</DialogTitle>
+                                        <DialogTitle>{t('profile.editProfile')}</DialogTitle>
                                         <DialogDescription>
-                                            Update your profile information
+                                            {t('profile.updateProfileInfo') || 'Update your profile information'}
                                         </DialogDescription>
                                     </DialogHeader>
                                     <div className="space-y-4 py-4">
                                         <div className="space-y-2">
-                                            <Label>Name</Label>
+                                            <Label>{t('auth.name')}</Label>
                                             <Input
                                                 value={profileData.name}
                                                 onChange={(e) =>
                                                     setProfileData({ ...profileData, name: e.target.value })
                                                 }
-                                                placeholder="Your name"
+                                                placeholder={t('auth.name')}
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label>Avatar URL</Label>
+                                            <Label>{t('profile.avatarUrl') || 'Avatar URL'}</Label>
                                             <Input
                                                 value={profileData.avatar}
                                                 onChange={(e) =>
@@ -226,13 +287,13 @@ export default function ProfilePage() {
                                             variant="outline"
                                             onClick={() => setEditingProfile(false)}
                                         >
-                                            Cancel
+                                            {t('common.cancel')}
                                         </Button>
                                         <Button
                                             onClick={handleUpdateProfile}
                                             disabled={updatingProfile}
                                         >
-                                            {updatingProfile ? 'Saving...' : 'Save Changes'}
+                                            {updatingProfile ? (t('profile.saving') || 'Saving...') : (t('common.save') || 'Save Changes')}
                                         </Button>
                                     </DialogFooter>
                                 </DialogContent>
@@ -275,19 +336,11 @@ export default function ProfilePage() {
                         <TabsList>
                             <TabsTrigger value="addresses">
                                 <MapPin className="w-4 h-4 mr-2" />
-                                Addresses
-                            </TabsTrigger>
-                            <TabsTrigger value="orders">
-                                <Package className="w-4 h-4 mr-2" />
-                                Orders
-                            </TabsTrigger>
-                            <TabsTrigger value="wishlist">
-                                <Heart className="w-4 h-4 mr-2" />
-                                Wishlist
+                                {t('profile.addresses')}
                             </TabsTrigger>
                             <TabsTrigger value="settings">
                                 <Settings className="w-4 h-4 mr-2" />
-                                Settings
+                                {t('common.settings')}
                             </TabsTrigger>
                         </TabsList>
 
@@ -296,23 +349,23 @@ export default function ProfilePage() {
                             <Card>
                                 <CardHeader className="flex flex-row items-center justify-between">
                                     <div>
-                                        <CardTitle>My Addresses</CardTitle>
+                                        <CardTitle>{t('profile.addresses')}</CardTitle>
                                         <CardDescription>
-                                            Manage your delivery addresses
+                                            {t('profile.manageAddresses') || 'Manage your delivery addresses'}
                                         </CardDescription>
                                     </div>
                                     <Dialog open={addingAddress} onOpenChange={setAddingAddress}>
                                         <DialogTrigger asChild>
                                             <Button>
                                                 <Plus className="w-4 h-4 mr-2" />
-                                                Add Address
+                                                {t('profile.addAddress')}
                                             </Button>
                                         </DialogTrigger>
                                         <DialogContent className="max-w-2xl">
                                             <DialogHeader>
-                                                <DialogTitle>Add New Address</DialogTitle>
+                                                <DialogTitle>{t('profile.addAddress')}</DialogTitle>
                                                 <DialogDescription>
-                                                    Add a new delivery address
+                                                    {t('profile.addNewAddress') || 'Add a new delivery address'}
                                                 </DialogDescription>
                                             </DialogHeader>
                                             <div className="grid grid-cols-2 gap-4 py-4">
@@ -414,13 +467,13 @@ export default function ProfilePage() {
                                                     variant="outline"
                                                     onClick={() => setAddingAddress(false)}
                                                 >
-                                                    Cancel
+                                                    {t('common.cancel')}
                                                 </Button>
                                                 <Button
                                                     onClick={handleAddAddress}
                                                     disabled={creatingAddress}
                                                 >
-                                                    {creatingAddress ? 'Adding...' : 'Add Address'}
+                                                    {creatingAddress ? (t('profile.addingAddress') || 'Adding...') : t('profile.addAddress')}
                                                 </Button>
                                             </DialogFooter>
                                         </DialogContent>
@@ -437,10 +490,10 @@ export default function ProfilePage() {
                                         <div className="text-center py-12">
                                             <MapPin className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                                             <p className="text-muted-foreground mb-4">
-                                                No addresses added yet
+                                                {t('profile.noAddresses') || 'No addresses added yet'}
                                             </p>
                                             <Button onClick={() => setAddingAddress(true)}>
-                                                Add Your First Address
+                                                {t('profile.addFirstAddress') || 'Add Your First Address'}
                                             </Button>
                                         </div>
                                     ) : (
@@ -457,7 +510,7 @@ export default function ProfilePage() {
                                                             <div className="flex items-center gap-2 mb-2">
                                                                 <h4 className="font-semibold">{address.name}</h4>
                                                                 {address.isDefault && (
-                                                                    <Badge>Default</Badge>
+                                                                    <Badge>{t('profile.defaultAddress')}</Badge>
                                                                 )}
                                                             </div>
                                                             <p className="text-sm text-muted-foreground">
@@ -480,7 +533,7 @@ export default function ProfilePage() {
                                                                     size="sm"
                                                                     onClick={() => setDefaultAddress(address.id)}
                                                                 >
-                                                                    Set Default
+                                                                    {t('profile.setDefault') || 'Set Default'}
                                                                 </Button>
                                                             )}
                                                             <Button
@@ -501,86 +554,187 @@ export default function ProfilePage() {
                             </Card>
                         </TabsContent>
 
-                        {/* Orders Tab */}
-                        <TabsContent value="orders">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>My Orders</CardTitle>
-                                    <CardDescription>View and track your orders</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-center py-12">
-                                        <Package className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                                        <p className="text-muted-foreground mb-4">
-                                            No orders yet
-                                        </p>
-                                        <Button asChild>
-                                            <Link href="/products">Start Shopping</Link>
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-
-                        {/* Wishlist Tab */}
-                        <TabsContent value="wishlist">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>My Wishlist</CardTitle>
-                                    <CardDescription>Your saved products</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-center py-12">
-                                        <Heart className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                                        <p className="text-muted-foreground mb-4">
-                                            Your wishlist is empty
-                                        </p>
-                                        <Button asChild>
-                                            <Link href="/products">Browse Products</Link>
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-
                         {/* Settings Tab */}
                         <TabsContent value="settings">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Account Settings</CardTitle>
-                                    <CardDescription>Manage your account preferences</CardDescription>
+                                    <CardTitle>{t('profile.accountSettings') || 'Account Settings'}</CardTitle>
+                                    <CardDescription>{t('profile.managePreferences') || 'Manage your account preferences'}</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
+                                    {/* Email Verification */}
                                     <div className="flex items-center justify-between py-4 border-b">
                                         <div>
-                                            <h4 className="font-medium">Email Verification</h4>
+                                            <h4 className="font-medium">{t('profile.emailVerification') || 'Email Verification'}</h4>
                                             <p className="text-sm text-muted-foreground">
                                                 {user.isVerified
-                                                    ? 'Your email is verified'
-                                                    : 'Please verify your email'}
+                                                    ? (t('profile.emailVerified') || 'Your email is verified')
+                                                    : (t('profile.pleaseVerify') || 'Please verify your email address')}
                                             </p>
                                         </div>
-                                        {!user.isVerified && (
-                                            <Button variant="outline">Send Verification</Button>
-                                        )}
+                                        <Button
+                                            variant="outline"
+                                            onClick={handleSendVerification}
+                                            disabled={user.isVerified || sendingVerification}
+                                        >
+                                            {sendingVerification ? (t('profile.sending') || 'Sending...') : (t('profile.sendVerification') || 'Send Verification')}
+                                        </Button>
                                     </div>
+
+                                    {/* Change Password */}
                                     <div className="flex items-center justify-between py-4 border-b">
                                         <div>
-                                            <h4 className="font-medium">Change Password</h4>
+                                            <h4 className="font-medium">{t('profile.changePassword')}</h4>
                                             <p className="text-sm text-muted-foreground">
-                                                Update your password
+                                                {t('profile.updatePassword') || 'Update your account password'}
                                             </p>
                                         </div>
-                                        <Button variant="outline">Change</Button>
+                                        <Dialog open={changingPassword} onOpenChange={setChangingPassword}>
+                                            <DialogTrigger asChild>
+                                                <Button variant="outline">{t('profile.change') || 'Change'}</Button>
+                                            </DialogTrigger>
+                                            <DialogContent>
+                                                <DialogHeader>
+                                                    <DialogTitle>{t('profile.changePassword')}</DialogTitle>
+                                                    <DialogDescription>
+                                                        {t('profile.enterCurrentPassword') || 'Enter your current password and choose a new one'}
+                                                    </DialogDescription>
+                                                </DialogHeader>
+                                                <div className="space-y-4 py-4">
+                                                    {/* Current Password */}
+                                                    <div className="space-y-2">
+                                                        <Label>{t('profile.currentPassword') || 'Current Password'} *</Label>
+                                                        <div className="relative">
+                                                            <Input
+                                                                type={showCurrentPassword ? "text" : "password"}
+                                                                value={passwordData.currentPassword}
+                                                                onChange={(e) =>
+                                                                    setPasswordData({
+                                                                        ...passwordData,
+                                                                        currentPassword: e.target.value
+                                                                    })
+                                                                }
+                                                                placeholder="Enter current password"
+                                                                className="pr-10"
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                                            >
+                                                                {showCurrentPassword ? (
+                                                                    <EyeOff className="w-4 h-4" />
+                                                                ) : (
+                                                                    <Eye className="w-4 h-4" />
+                                                                )}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* New Password */}
+                                                    <div className="space-y-2">
+                                                        <Label>{t('profile.newPassword') || 'New Password'} *</Label>
+                                                        <div className="relative">
+                                                            <Input
+                                                                type={showNewPassword ? "text" : "password"}
+                                                                value={passwordData.newPassword}
+                                                                onChange={(e) =>
+                                                                    setPasswordData({
+                                                                        ...passwordData,
+                                                                        newPassword: e.target.value
+                                                                    })
+                                                                }
+                                                                placeholder="Enter new password"
+                                                                className="pr-10"
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setShowNewPassword(!showNewPassword)}
+                                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                                            >
+                                                                {showNewPassword ? (
+                                                                    <EyeOff className="w-4 h-4" />
+                                                                ) : (
+                                                                    <Eye className="w-4 h-4" />
+                                                                )}
+                                                            </button>
+                                                        </div>
+                                                        {!passwordLengthValid && (
+                                                            <p className="text-xs text-red-500">
+                                                                {t('profile.passwordLength') || 'Password must be at least 6 characters'}
+                                                            </p>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Confirm Password */}
+                                                    <div className="space-y-2">
+                                                        <Label>{t('auth.confirmPassword')} *</Label>
+                                                        <div className="relative">
+                                                            <Input
+                                                                type={showConfirmPassword ? "text" : "password"}
+                                                                value={passwordData.confirmPassword}
+                                                                onChange={(e) =>
+                                                                    setPasswordData({
+                                                                        ...passwordData,
+                                                                        confirmPassword: e.target.value
+                                                                    })
+                                                                }
+                                                                placeholder="Confirm new password"
+                                                                className="pr-10"
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                                            >
+                                                                {showConfirmPassword ? (
+                                                                    <EyeOff className="w-4 h-4" />
+                                                                ) : (
+                                                                    <Eye className="w-4 h-4" />
+                                                                )}
+                                                            </button>
+                                                        </div>
+                                                        {passwordData.confirmPassword && !passwordsMatch && (
+                                                            <p className="text-xs text-red-500">
+                                                                {t('profile.passwordsNoMatch') || 'Passwords do not match'}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <DialogFooter>
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() => {
+                                                            setChangingPassword(false);
+                                                            setPasswordData({
+                                                                currentPassword: '',
+                                                                newPassword: '',
+                                                                confirmPassword: '',
+                                                            });
+                                                        }}
+                                                    >
+                                                        {t('common.cancel')}
+                                                    </Button>
+                                                    <Button
+                                                        onClick={handleChangePassword}
+                                                        disabled={!canSubmitPassword || changingPasswordLoading}
+                                                    >
+                                                        {changingPasswordLoading ? (t('profile.changing') || 'Changing...') : t('profile.changePassword')}
+                                                    </Button>
+                                                </DialogFooter>
+                                            </DialogContent>
+                                        </Dialog>
                                     </div>
+
+                                    {/* Delete Account */}
                                     <div className="flex items-center justify-between py-4">
                                         <div>
-                                            <h4 className="font-medium text-red-600">Delete Account</h4>
+                                            <h4 className="font-medium text-red-600">{t('profile.deleteAccount') || 'Delete Account'}</h4>
                                             <p className="text-sm text-muted-foreground">
-                                                Permanently delete your account
+                                                {t('profile.deleteAccountDesc') || 'Permanently delete your account and all data'}
                                             </p>
                                         </div>
-                                        <Button variant="destructive">Delete</Button>
+                                        <Button variant="destructive">{t('common.delete')}</Button>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -589,7 +743,5 @@ export default function ProfilePage() {
                 </div>
             </div>
         </ProtectedRoute>
-);
+    );
 }
-
-

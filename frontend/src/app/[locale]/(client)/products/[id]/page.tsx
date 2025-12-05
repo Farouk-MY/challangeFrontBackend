@@ -48,10 +48,10 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     const { mutate: toggleWishlist, isPending: togglingWishlist } = useToggleWishlist();
 
     if (isLoading) return <LoadingPage />;
-    if (error) return <ErrorDisplay title="Product not found" />;
+    if (error) return <ErrorDisplay title={t('productDetail.notFound')} />;
 
     const product = data?.data?.product;
-    if (!product) return <ErrorDisplay title="Product not found" />;
+    if (!product) return <ErrorDisplay title={t('productDetail.notFound')} />;
 
     const productName = locale === 'ar' && product.nameAr ? product.nameAr : product.name;
     const productDesc =
@@ -96,7 +96,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                         className="flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
                     >
                         <ChevronLeft className="w-4 h-4 mr-1" />
-                        Back
+                        {t('productDetail.back')}
                     </button>
                 </div>
             </div>
@@ -147,11 +147,11 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                     <div className="space-y-6">
                         {/* Badges */}
                         <div className="flex items-center gap-2 flex-wrap">
-                            {product.featured && <Badge className="badge-info">Featured</Badge>}
+                            {product.featured && <Badge className="badge-info">{t('productDetail.featured')}</Badge>}
                             {isOutOfStock && (
                                 <Badge variant="destructive">{t('products.outOfStock')}</Badge>
                             )}
-                            {isLowStock && <Badge variant="outline">Only {product.stock} left</Badge>}
+                            {isLowStock && <Badge variant="outline">{t('productDetail.onlyLeft', { count: product.stock })}</Badge>}
                         </div>
 
                         {/* Title */}
@@ -183,7 +183,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                     ))}
                                 </div>
                                 <span className="text-sm text-muted-foreground">
-                                    {averageRating.toFixed(1)} ({product.reviews.length} reviews)
+                                    {averageRating.toFixed(1)} ({t('productDetail.reviewsCount', { count: product.reviews.length })})
                                 </span>
                             </div>
                         )}
@@ -205,7 +205,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
 
                         {/* Quantity Selector */}
                         <div className="space-y-3">
-                            <label className="text-sm font-medium">Quantity</label>
+                            <label className="text-sm font-medium">{t('productDetail.quantity')}</label>
                             <div className="flex items-center gap-4">
                                 <div className="flex items-center border rounded-lg">
                                     <Button
@@ -227,7 +227,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                     </Button>
                                 </div>
                                 <span className="text-sm text-muted-foreground">
-                                    {product.stock} available
+                                    {t('productDetail.available', { count: product.stock })}
                                 </span>
                             </div>
                         </div>
@@ -241,7 +241,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                 disabled={isOutOfStock || addingToCart}
                             >
                                 {addingToCart ? (
-                                    'Adding...'
+                                    t('productDetail.adding')
                                 ) : (
                                     <>
                                         <ShoppingCart className="w-5 h-5 mr-2" />
@@ -266,15 +266,15 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                         <div className="grid grid-cols-3 gap-4 pt-4">
                             <div className="flex flex-col items-center text-center p-4 rounded-lg bg-slate-50 dark:bg-slate-900">
                                 <Truck className="w-6 h-6 mb-2 text-primary" />
-                                <span className="text-xs text-muted-foreground">Free Shipping</span>
+                                <span className="text-xs text-muted-foreground">{t('productDetail.features.freeShipping')}</span>
                             </div>
                             <div className="flex flex-col items-center text-center p-4 rounded-lg bg-slate-50 dark:bg-slate-900">
                                 <Shield className="w-6 h-6 mb-2 text-primary" />
-                                <span className="text-xs text-muted-foreground">Secure Payment</span>
+                                <span className="text-xs text-muted-foreground">{t('productDetail.features.securePayment')}</span>
                             </div>
                             <div className="flex flex-col items-center text-center p-4 rounded-lg bg-slate-50 dark:bg-slate-900">
                                 <RefreshCw className="w-6 h-6 mb-2 text-primary" />
-                                <span className="text-xs text-muted-foreground">Easy Returns</span>
+                                <span className="text-xs text-muted-foreground">{t('productDetail.features.easyReturns')}</span>
                             </div>
                         </div>
                     </div>
@@ -284,9 +284,9 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                 <div className="mt-16">
                     <Tabs defaultValue="description" className="w-full">
                         <TabsList className="grid w-full max-w-md grid-cols-2">
-                            <TabsTrigger value="description">Description</TabsTrigger>
+                            <TabsTrigger value="description">{t('productDetail.tabs.description')}</TabsTrigger>
                             <TabsTrigger value="reviews">
-                                Reviews ({product.reviews?.length || 0})
+                                {t('productDetail.tabs.reviews')} ({product.reviews?.length || 0})
                             </TabsTrigger>
                         </TabsList>
 
@@ -312,7 +312,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                                     <div>
                                                         <p className="font-medium">{review.user.name}</p>
                                                         <p className="text-xs text-muted-foreground">
-                                                            {new Date(review.createdAt).toLocaleDateString()}
+                                                            {new Date(review.createdAt).toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US')}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -335,7 +335,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                 </div>
                             ) : (
                                 <p className="text-center text-muted-foreground py-8">
-                                    No reviews yet. Be the first to review!
+                                    {t('productDetail.noReviews')}
                                 </p>
                             )}
                         </TabsContent>

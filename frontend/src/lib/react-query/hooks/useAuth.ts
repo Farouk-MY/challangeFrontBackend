@@ -1,10 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/lib/api';
-import { queryKeys } from '@/lib/react-query/client'; // ✅ Change this line
+import { queryKeys } from '@/lib/react-query/client';
 import { LoginCredentials, RegisterCredentials } from '@/types';
 import { toast } from 'sonner';
-import { useSyncGuestCart } from './useCart'; // Add this import
+import { useSyncGuestCart } from './useCart';
 
 
 // Get current user
@@ -20,21 +20,19 @@ export const useMe = () => {
     });
 };
 
-// Register mutation
+// Register mutation - ✅ COMPLETELY FIXED - NO AUTO LOGIN
 export const useRegister = () => {
-    //const router = useRouter();
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: (credentials: RegisterCredentials) => authApi.register(credentials),
         onSuccess: (data) => {
-            // Set user in cache
-            queryClient.setQueryData(queryKeys.auth.me, {
-                success: true,
-                data: { user: data.data?.user },
-            });
-            toast.success('Account created successfully!');
-            //router.push('/');
+            // ✅ DON'T set user in cache (no tokens received)
+            // ✅ DON'T redirect
+            // ✅ Just show success message
+            toast.success('Account created! Please check your email to verify your account.');
+
+            // The register page component will handle showing the verification screen
         },
         onError: (error: any) => {
             toast.error(error.response?.data?.message || 'Registration failed');
@@ -42,11 +40,11 @@ export const useRegister = () => {
     });
 };
 
-// Login mutation
+// Login mutation - ✅ UPDATED - Handle verification error
 export const useLogin = () => {
     const router = useRouter();
     const queryClient = useQueryClient();
-    const { mutate: syncCart } = useSyncGuestCart(); // Add this
+    const { mutate: syncCart } = useSyncGuestCart();
 
     return useMutation({
         mutationFn: (credentials: LoginCredentials) => authApi.login(credentials),
@@ -57,7 +55,7 @@ export const useLogin = () => {
             });
 
             // Sync guest cart after successful login
-            syncCart(); // Add this
+            syncCart();
 
             toast.success('Login successful!');
 
@@ -68,7 +66,23 @@ export const useLogin = () => {
             }
         },
         onError: (error: any) => {
-            toast.error(error.response?.data?.message || 'Login failed');
+            const message = error.response?.data?.message || 'Login failed';
+
+            // ✅ Check if it's a verification error (403 status)
+            if (error.response?.status === 403) {
+                toast.error(message, {
+                    duration: 5000, // Show longer for verification errors
+                    action: {
+                        label: 'Resend Email',
+                        onClick: () => {
+                            // User can manually resend from their email or we can add a function here
+                            toast.info('Please check your email for the verification link');
+                        },
+                    },
+                });
+            } else {
+                toast.error(message);
+            }
         },
     });
 };
@@ -97,10 +111,10 @@ export const useSendVerificationEmail = () => {
     return useMutation({
         mutationFn: authApi.sendVerificationEmail,
         onSuccess: () => {
-            toast.success('Verification email sent!');
+            toast.success('Verification email sent! Check your inbox.');
         },
         onError: (error: any) => {
-            toast.error(error.response?.data?.message || 'Failed to send email');
+            toast.error(error.response?.data?.message || 'Failed to send verification email');
         },
     });
 };
@@ -113,7 +127,7 @@ export const useVerifyEmail = () => {
         mutationFn: (token: string) => authApi.verifyEmail(token),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.auth.me });
-            toast.success('Email verified successfully!');
+            toast.success('Email verified successfully! You can now login.');
         },
         onError: (error: any) => {
             toast.error(error.response?.data?.message || 'Verification failed');
@@ -142,7 +156,7 @@ export const useResetPassword = () => {
         mutationFn: ({ token, password }: { token: string; password: string }) =>
             authApi.resetPassword(token, password),
         onSuccess: () => {
-            toast.success('Password reset successfully!');
+            toast.success('Password reset successfully! You can now login.');
             router.push('/login');
         },
         onError: (error: any) => {

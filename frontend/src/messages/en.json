@@ -35,6 +35,54 @@
     "logout": "Logout",
     "admin": "Admin Dashboard"
   },
+  "home": {
+    "hero": {
+      "welcomeBadge": "Welcome to NeonShop",
+      "title": "Discover Amazing",
+      "titleHighlight": "Products",
+      "titleEnd": "for Your Lifestyle",
+      "description": "Shop the latest trends in fashion, electronics, home decor, and more. Quality products at unbeatable prices.",
+      "shopNow": "Shop Now",
+      "imageAlt": "Hero shopping image",
+      "trustedBy": "Trusted by",
+      "trustedUsers": "10,000+ Users"
+    },
+    "stats": {
+      "customers": "Happy Customers",
+      "products": "Products",
+      "rating": "Rating"
+    },
+    "features": {
+      "fastDelivery": {
+        "title": "Fast Delivery",
+        "description": "Get your orders delivered within 24-48 hours"
+      },
+      "securePayment": {
+        "title": "Secure Payment",
+        "description": "100% secure and encrypted payment process"
+      },
+      "freeShipping": {
+        "title": "Free Shipping",
+        "description": "Free shipping on orders over $50"
+      },
+      "easyReturns": {
+        "title": "Easy Returns",
+        "description": "30-day money back guarantee"
+      }
+    },
+    "featuredProducts": {
+      "subtitle": "Handpicked products just for you",
+      "error": "Failed to load products",
+      "errorMessage": "We couldn't load featured products. Please try again later.",
+      "noProducts": "No featured products available"
+    },
+    "cta": {
+      "title": "Ready to Start Shopping?",
+      "description": "Join thousands of happy customers and discover amazing products today!",
+      "browseProducts": "Browse Products",
+      "createAccount": "Create Account"
+    }
+  },
   "auth": {
     "loginTitle": "Login to Your Account",
     "registerTitle": "Create an Account",
@@ -80,7 +128,25 @@
     "remove": "Remove",
     "updateCart": "Update Cart",
     "itemAdded": "Item added to cart",
-    "itemRemoved": "Item removed from cart"
+    "itemRemoved": "Item removed from cart",
+    "items": "items",
+    "item": "item",
+    "yourItems": "Your Items",
+    "clearCart": "Clear Cart",
+    "clearCartConfirm": "Clear your cart?",
+    "clearCartDescription": "This will remove all items from your cart. This action cannot be undone.",
+    "orderSummary": "Order Summary",
+    "shipping": "Shipping",
+    "free": "FREE",
+    "discount": "Discount",
+    "freeShippingPromo": "🎉 Add ${amount} more for FREE shipping!",
+    "promoCode": "Promo Code",
+    "enterCode": "Enter code",
+    "apply": "Apply",
+    "securePayment": "Secure Payment",
+    "fastDelivery": "Fast Delivery",
+    "each": "each",
+    "available": "available"
   },
   "checkout": {
     "title": "Checkout",
@@ -133,7 +199,283 @@
     "addresses": "My Addresses",
     "addAddress": "Add New Address",
     "defaultAddress": "Default Address",
-    "deleteAddress": "Delete Address"
+    "deleteAddress": "Delete Address",
+    "totalOrders": "Total Orders",
+    "wishlistItems": "Wishlist Items",
+    "verified": "Verified",
+    "notVerified": "Not Verified",
+    "updateProfileInfo": "Update your profile information",
+    "avatarUrl": "Avatar URL",
+    "saving": "Saving...",
+    "manageAddresses": "Manage your delivery addresses",
+    "addNewAddress": "Add a new delivery address",
+    "addingAddress": "Adding...",
+    "noAddresses": "No addresses added yet",
+    "addFirstAddress": "Add Your First Address",
+    "setDefault": "Set Default",
+    "accountSettings": "Account Settings",
+    "managePreferences": "Manage your account preferences",
+    "emailVerification": "Email Verification",
+    "emailVerified": "Your email is verified",
+    "pleaseVerify": "Please verify your email address",
+    "sending": "Sending...",
+    "sendVerification": "Send Verification",
+    "updatePassword": "Update your account password",
+    "change": "Change",
+    "enterCurrentPassword": "Enter your current password and choose a new one",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "passwordLength": "Password must be at least 6 characters",
+    "passwordsNoMatch": "Passwords do not match",
+    "changing": "Changing...",
+    "deleteAccount": "Delete Account",
+    "deleteAccountDesc": "Permanently delete your account and all data"
+  },
+  "productsPage": {
+    "subtitle": "Discover our wide selection of quality products",
+    "filters": "Filters",
+    "clearAll": "Clear All",
+    "search": "Search",
+    "searchPlaceholder": "Search products...",
+    "allCategories": "All Categories",
+    "priceRange": "Price Range",
+    "sortBy": "Sort By",
+    "sort": {
+      "newest": "Newest First",
+      "oldest": "Oldest First",
+      "priceLowHigh": "Price: Low to High",
+      "priceHighLow": "Price: High to Low",
+      "nameAZ": "Name: A to Z",
+      "nameZA": "Name: Z to A"
+    },
+    "refineSearch": "Refine your product search",
+    "applyFilters": "Apply Filters",
+    "activeFilters": "Active Filters",
+    "productsFound": "{count} products found",
+    "error": "Failed to load products",
+    "errorMessage": "We couldn't load the products. Please try again later.",
+    "noProducts": "No products found matching your criteria",
+    "clearFilters": "Clear Filters",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "productDetail": {
+    "notFound": "Product not found",
+    "back": "Back",
+    "featured": "Featured",
+    "onlyLeft": "Only {count} left",
+    "reviewsCount": "{count} reviews",
+    "quantity": "Quantity",
+    "available": "{count} available",
+    "adding": "Adding...",
+    "features": {
+      "freeShipping": "Free Shipping",
+      "securePayment": "Secure Payment",
+      "easyReturns": "Easy Returns"
+    },
+    "tabs": {
+      "description": "Description",
+      "reviews": "Reviews"
+    },
+    "noReviews": "No reviews yet. Be the first to review!"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Find answers to common questions about orders, shipping, payments, and more",
+    "searchPlaceholder": "Search for answers...",
+    "allCategories": "All Categories",
+    "questions": "questions",
+    "noResults": "No results found",
+    "noResultsDescription": "Try different keywords or browse all categories",
+    "clearSearch": "Clear Search",
+    "stillHaveQuestions": "Still have questions?",
+    "stillHaveQuestionsDesc": "Can't find what you're looking for? Our support team is here to help.",
+    "contactSupport": "Contact Support",
+    "categories": {
+      "orders": {
+        "name": "Orders & Shipping",
+        "faqs": {
+          "shippingTime": {
+            "question": "How long does shipping take?",
+            "answer": "Standard shipping typically takes 3-5 business days. Express shipping is available for 1-2 day delivery. Free shipping is offered on orders over $50."
+          },
+          "trackOrder": {
+            "question": "How can I track my order?",
+            "answer": "Once your order ships, you'll receive a tracking number via email. You can also track your order by logging into your account and visiting the Orders page."
+          },
+          "changeOrder": {
+            "question": "Can I change or cancel my order?",
+            "answer": "You can cancel or modify your order within 1 hour of placing it. After that, the order enters processing and cannot be changed. Contact support if you need assistance."
+          },
+          "international": {
+            "question": "Do you ship internationally?",
+            "answer": "Yes, we ship to most countries worldwide. International shipping times vary by location, typically 7-14 business days. Customs fees may apply."
+          }
+        }
+      },
+      "payment": {
+        "name": "Payment & Pricing",
+        "faqs": {
+          "paymentMethods": {
+            "question": "What payment methods do you accept?",
+            "answer": "We accept all major credit cards (Visa, MasterCard, American Express), PayPal, and Cash on Delivery for select regions."
+          },
+          "security": {
+            "question": "Is my payment information secure?",
+            "answer": "Absolutely! We use industry-standard SSL encryption to protect your payment information. We never store your full credit card details on our servers."
+          },
+          "priceMatch": {
+            "question": "Do you offer price matching?",
+            "answer": "Yes! If you find a lower price on an identical item from a competitor, we'll match it. Contact support with proof of the lower price within 7 days of purchase."
+          },
+          "promoCodes": {
+            "question": "Can I use multiple promo codes?",
+            "answer": "Only one promo code can be applied per order. Promo codes cannot be combined with other offers unless specifically stated."
+          }
+        }
+      },
+      "returns": {
+        "name": "Returns & Refunds",
+        "faqs": {
+          "returnPolicy": {
+            "question": "What is your return policy?",
+            "answer": "We offer a 30-day money-back guarantee on most items. Products must be unused and in original packaging. Shipping costs for returns are the customer's responsibility unless the item is defective."
+          },
+          "startReturn": {
+            "question": "How do I start a return?",
+            "answer": "Log into your account, go to Orders, select the order you want to return, and click 'Request Return'. Follow the instructions to print your return label."
+          },
+          "refundTime": {
+            "question": "How long do refunds take?",
+            "answer": "Once we receive your return, refunds are processed within 3-5 business days. The refund will be credited to your original payment method."
+          },
+          "exchange": {
+            "question": "Can I exchange an item?",
+            "answer": "Yes! You can exchange items for different sizes, colors, or styles. Contact support to arrange an exchange instead of a full return."
+          }
+        }
+      },
+      "account": {
+        "name": "Account & Support",
+        "faqs": {
+          "createAccount": {
+            "question": "How do I create an account?",
+            "answer": "Click on 'Sign Up' in the top right corner, fill in your details, and verify your email address. You can also create an account during checkout."
+          },
+          "forgotPassword": {
+            "question": "I forgot my password. What should I do?",
+            "answer": "Click on 'Forgot Password' on the login page. Enter your email address and we'll send you instructions to reset your password."
+          },
+          "updateInfo": {
+            "question": "How do I update my account information?",
+            "answer": "Log into your account and go to Profile Settings. From there you can update your name, email, password, and saved addresses."
+          },
+          "contactSupport": {
+            "question": "How can I contact customer support?",
+            "answer": "You can reach our support team via email at support@neonshop.com, phone at +1 (555) 123-4567, or use our contact form. We respond within 24 hours."
+          }
+        }
+      }
+    }
+  },
+  "contact": {
+    "title": "Get in Touch",
+    "subtitle": "Have a question or feedback? We'd love to hear from you. Send us a message and we'll respond as soon as possible.",
+    "form": {
+      "title": "Send us a Message",
+      "subtitle": "Fill out the form below and we'll get back to you within 24 hours",
+      "name": "Your Name",
+      "email": "Email Address",
+      "subject": "Subject",
+      "message": "Message",
+      "namePlaceholder": "John Doe",
+      "emailPlaceholder": "john@example.com",
+      "subjectPlaceholder": "How can we help you?",
+      "messagePlaceholder": "Tell us more about your inquiry...",
+      "send": "Send Message",
+      "sending": "Sending...",
+      "required": "*"
+    },
+    "success": {
+      "title": "Message Sent!",
+      "description": "Thank you for contacting us. We'll respond soon."
+    },
+    "info": {
+      "email": {
+        "title": "Email",
+        "content": "support@neonshop.com"
+      },
+      "phone": {
+        "title": "Phone",
+        "content": "+1 (555) 123-4567"
+      },
+      "address": {
+        "title": "Address",
+        "content": "123 Main Street, New York, NY 10001"
+      },
+      "hours": {
+        "title": "Working Hours",
+        "content": "Mon-Fri: 9AM - 6PM"
+      }
+    },
+    "map": {
+      "description": "Visit our store or reach out to us using the contact information above."
+    },
+    "faqSection": {
+      "title": "Looking for Quick Answers?",
+      "description": "Check out our FAQ section for instant answers to common questions",
+      "visitFaq": "Visit FAQ"
+    }
+  },
+  "about": {
+    "hero": {
+      "badge": "Est. 2019",
+      "title": "Welcome to NeonShop",
+      "description": "We're passionate about bringing you the best products at unbeatable prices. Our mission is to make online shopping easy, enjoyable, and accessible to everyone.",
+      "shopNow": "Shop Now"
+    },
+    "stats": {
+      "customers": "Happy Customers",
+      "products": "Products",
+      "years": "Years in Business",
+      "satisfaction": "Customer Satisfaction"
+    },
+    "story": {
+      "title": "Our Story",
+      "paragraph1": "Founded in 2019, NeonShop started with a simple idea: make quality products accessible to everyone. What began as a small online store has grown into a thriving community of happy customers across the country.",
+      "paragraph2": "We believe that shopping should be more than just a transaction. It should be an experience that brings joy, convenience, and value to your life. That's why we carefully curate every product in our catalog and provide exceptional customer service at every step.",
+      "paragraph3": "Today, we're proud to serve thousands of customers and continue to expand our product range while staying true to our core values: quality, affordability, and customer satisfaction."
+    },
+    "values": {
+      "title": "Our Values",
+      "subtitle": "These principles guide everything we do and help us deliver the best experience to our customers",
+      "customerFirst": {
+        "title": "Customer First",
+        "description": "Our customers are at the heart of everything we do. We strive to exceed expectations with every interaction."
+      },
+      "quality": {
+        "title": "Quality Guaranteed",
+        "description": "We carefully curate our products to ensure only the highest quality items make it to our store."
+      },
+      "innovation": {
+        "title": "Innovation",
+        "description": "We constantly evolve to bring you the latest products and the best shopping experience."
+      },
+      "sustainability": {
+        "title": "Sustainability",
+        "description": "We're committed to sustainable practices and partnering with eco-conscious brands."
+      }
+    },
+    "team": {
+      "title": "Meet Our Team",
+      "subtitle": "The passionate people behind NeonShop"
+    },
+    "cta": {
+      "title": "Join the NeonShop Family",
+      "description": "Start shopping today and experience the difference of quality service and products",
+      "browseProducts": "Browse Products",
+      "contactUs": "Contact Us"
+    }
   },
   "footer": {
     "aboutUs": "About Us",
@@ -141,6 +483,34 @@
     "termsOfService": "Terms of Service",
     "privacyPolicy": "Privacy Policy",
     "followUs": "Follow Us",
-    "copyright": "© 2024 NeonShop. All rights reserved."
+    "copyright": "© 2024 NeonShop. All rights reserved.",
+    "features": {
+      "fastDelivery": {
+        "title": "Fast Delivery",
+        "desc": "Within 2-3 days"
+      },
+      "securePayment": {
+        "title": "Secure Payment",
+        "desc": "100% protected"
+      },
+      "support": {
+        "title": "24/7 Support",
+        "desc": "Always here"
+      }
+    },
+    "newsletter": {
+      "title": "Join Our Community!",
+      "description": "Get exclusive deals, early access to sales, and special offers straight to your inbox.",
+      "placeholder": "Enter your email address",
+      "subscribe": "Subscribe",
+      "subscribed": "Subscribed!",
+      "offer": "🎁 Get 10% off your first order when you subscribe!"
+    },
+    "brandDescription": "Your trusted destination for premium products. Quality, affordability, and exceptional service in one place.",
+    "customer": "Customer",
+    "company": "Company",
+    "weAccept": "We Accept",
+    "madeWith": "Made with",
+    "forYou": "for you"
   }
 }

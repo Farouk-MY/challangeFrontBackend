@@ -5,7 +5,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Send, MessageSquare, Clock } from 'lucide-react';
+import { useTranslations, useLocale } from 'next-intl';
+import {Mail, Phone, MapPin, Send, MessageSquare, Clock, Sparkles} from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import { contactApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,8 @@ const contactSchema = z.object({
 type ContactFormData = z.infer<typeof contactSchema>;
 
 export default function ContactPage() {
+    const t = useTranslations();
+    const locale = useLocale();
     const [submitted, setSubmitted] = useState(false);
 
     const {
@@ -56,51 +59,71 @@ export default function ContactPage() {
     const contactInfo = [
         {
             icon: Mail,
-            title: 'Email',
-            content: 'support@neonshop.com',
+            title: t('contact.info.email.title'),
+            content: t('contact.info.email.content'),
             link: 'mailto:support@neonshop.com',
             gradient: 'from-blue-500 to-indigo-500',
         },
         {
             icon: Phone,
-            title: 'Phone',
-            content: '+1 (555) 123-4567',
+            title: t('contact.info.phone.title'),
+            content: t('contact.info.phone.content'),
             link: 'tel:+15551234567',
             gradient: 'from-green-500 to-emerald-500',
         },
         {
             icon: MapPin,
-            title: 'Address',
-            content: '123 Main Street, New York, NY 10001',
+            title: t('contact.info.address.title'),
+            content: t('contact.info.address.content'),
             link: 'https://maps.google.com',
             gradient: 'from-purple-500 to-pink-500',
         },
         {
             icon: Clock,
-            title: 'Working Hours',
-            content: 'Mon-Fri: 9AM - 6PM',
+            title: t('contact.info.hours.title'),
+            content: t('contact.info.hours.content'),
             link: null,
             gradient: 'from-orange-500 to-red-500',
         },
     ];
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 text-white py-16">
-                <div className="container-custom">
+            <div className="relative bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-500 dark:via-indigo-500 dark:to-purple-500 text-white py-20 lg:py-28 overflow-hidden">
+                {/* Animated Background Elements */}
+                <div className="absolute inset-0 overflow-hidden">
+                    <div className={`absolute top-20 ${locale === 'ar' ? 'left-10' : 'right-10'} w-72 h-72 bg-white/10 rounded-full blur-3xl animate-pulse`} />
+                    <div className={`absolute bottom-20 ${locale === 'ar' ? 'right-20' : 'left-20'} w-96 h-96 bg-purple-300/10 rounded-full blur-3xl animate-pulse delay-700`} />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-400/5 rounded-full blur-3xl" />
+                </div>
+
+                <div className="container-custom relative z-10">
                     <motion.div
-                        initial={{ opacity: 0, y: -20 }}
+                        initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="max-w-2xl"
+                        className="max-w-3xl mx-auto text-center space-y-6"
                     >
-                        <h1 className="text-4xl md:text-5xl font-bold mb-4">Get in Touch</h1>
-                        <p className="text-lg text-blue-100">
-                            Have a question or feedback? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+                        <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ delay: 0.2, type: "spring" }}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20"
+                        >
+                            <Sparkles className="w-4 h-4" />
+                            <span className="text-sm font-medium">{locale === 'ar' ? 'نحن هنا للمساعدة' : 'We\'re Here to Help'}</span>
+                        </motion.div>
+
+                        <h1 className="text-4xl md:text-6xl font-bold leading-tight">
+                            {t('contact.title')}
+                        </h1>
+                        <p className="text-lg md:text-xl text-blue-100 max-w-2xl mx-auto leading-relaxed">
+                            {t('contact.subtitle')}
                         </p>
                     </motion.div>
                 </div>
             </div>
+
 
             <div className="container-custom py-12">
                 <div className="grid lg:grid-cols-3 gap-8">
@@ -113,12 +136,12 @@ export default function ContactPage() {
                         >
                             <Card>
                                 <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
+                                    <CardTitle className={`flex items-center gap-2 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
                                         <MessageSquare className="w-5 h-5" />
-                                        Send us a Message
+                                        {t('contact.form.title')}
                                     </CardTitle>
-                                    <CardDescription>
-                                        Fill out the form below and we'll get back to you within 24 hours
+                                    <CardDescription className={locale === 'ar' ? 'text-right' : ''}>
+                                        {t('contact.form.subtitle')}
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
@@ -131,61 +154,73 @@ export default function ContactPage() {
                                             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
                                                 <Send className="w-8 h-8 text-green-600 dark:text-green-400" />
                                             </div>
-                                            <h3 className="text-xl font-bold mb-2">Message Sent!</h3>
+                                            <h3 className="text-xl font-bold mb-2">{t('contact.success.title')}</h3>
                                             <p className="text-muted-foreground">
-                                                Thank you for contacting us. We'll respond soon.
+                                                {t('contact.success.description')}
                                             </p>
                                         </motion.div>
                                     ) : (
                                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                                             <div className="grid sm:grid-cols-2 gap-4">
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="name">Your Name *</Label>
+                                                    <Label htmlFor="name" className={locale === 'ar' ? 'text-right block' : ''}>
+                                                        {t('contact.form.name')} {t('contact.form.required')}
+                                                    </Label>
                                                     <Input
                                                         id="name"
                                                         {...register('name')}
-                                                        placeholder="John Doe"
+                                                        placeholder={t('contact.form.namePlaceholder')}
+                                                        className={locale === 'ar' ? 'text-right' : ''}
                                                     />
                                                     {errors.name && (
-                                                        <p className="text-xs text-red-500">{errors.name.message}</p>
+                                                        <p className={`text-xs text-red-500 ${locale === 'ar' ? 'text-right' : ''}`}>{errors.name.message}</p>
                                                     )}
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="email">Email Address *</Label>
+                                                    <Label htmlFor="email" className={locale === 'ar' ? 'text-right block' : ''}>
+                                                        {t('contact.form.email')} {t('contact.form.required')}
+                                                    </Label>
                                                     <Input
                                                         id="email"
                                                         type="email"
                                                         {...register('email')}
-                                                        placeholder="john@example.com"
+                                                        placeholder={t('contact.form.emailPlaceholder')}
+                                                        className={locale === 'ar' ? 'text-right' : ''}
                                                     />
                                                     {errors.email && (
-                                                        <p className="text-xs text-red-500">{errors.email.message}</p>
+                                                        <p className={`text-xs text-red-500 ${locale === 'ar' ? 'text-right' : ''}`}>{errors.email.message}</p>
                                                     )}
                                                 </div>
                                             </div>
 
                                             <div className="space-y-2">
-                                                <Label htmlFor="subject">Subject *</Label>
+                                                <Label htmlFor="subject" className={locale === 'ar' ? 'text-right block' : ''}>
+                                                    {t('contact.form.subject')} {t('contact.form.required')}
+                                                </Label>
                                                 <Input
                                                     id="subject"
                                                     {...register('subject')}
-                                                    placeholder="How can we help you?"
+                                                    placeholder={t('contact.form.subjectPlaceholder')}
+                                                    className={locale === 'ar' ? 'text-right' : ''}
                                                 />
                                                 {errors.subject && (
-                                                    <p className="text-xs text-red-500">{errors.subject.message}</p>
+                                                    <p className={`text-xs text-red-500 ${locale === 'ar' ? 'text-right' : ''}`}>{errors.subject.message}</p>
                                                 )}
                                             </div>
 
                                             <div className="space-y-2">
-                                                <Label htmlFor="message">Message *</Label>
+                                                <Label htmlFor="message" className={locale === 'ar' ? 'text-right block' : ''}>
+                                                    {t('contact.form.message')} {t('contact.form.required')}
+                                                </Label>
                                                 <Textarea
                                                     id="message"
                                                     {...register('message')}
-                                                    placeholder="Tell us more about your inquiry..."
+                                                    placeholder={t('contact.form.messagePlaceholder')}
                                                     rows={6}
+                                                    className={locale === 'ar' ? 'text-right' : ''}
                                                 />
                                                 {errors.message && (
-                                                    <p className="text-xs text-red-500">{errors.message.message}</p>
+                                                    <p className={`text-xs text-red-500 ${locale === 'ar' ? 'text-right' : ''}`}>{errors.message.message}</p>
                                                 )}
                                             </div>
 
@@ -196,11 +231,11 @@ export default function ContactPage() {
                                                 disabled={isPending}
                                             >
                                                 {isPending ? (
-                                                    'Sending...'
+                                                    t('contact.form.sending')
                                                 ) : (
                                                     <>
-                                                        <Send className="w-5 h-5 mr-2" />
-                                                        Send Message
+                                                        <Send className={`w-5 h-5 ${locale === 'ar' ? 'ml-2' : 'mr-2'}`} />
+                                                        {t('contact.form.send')}
                                                     </>
                                                 )}
                                             </Button>
@@ -216,17 +251,17 @@ export default function ContactPage() {
                         {contactInfo.map((info, index) => (
                             <motion.div
                                 key={index}
-                                initial={{ opacity: 0, x: 20 }}
+                                initial={{ opacity: 0, x: locale === 'ar' ? -20 : 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: index * 0.1 }}
                             >
                                 <Card className="hover:shadow-lg transition-shadow">
                                     <CardContent className="p-6">
-                                        <div className="flex items-start gap-4">
+                                        <div className={`flex items-start gap-4 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
                                             <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${info.gradient} flex items-center justify-center flex-shrink-0`}>
                                                 <info.icon className="w-6 h-6 text-white" />
                                             </div>
-                                            <div className="flex-1">
+                                            <div className={`flex-1 ${locale === 'ar' ? 'text-right' : ''}`}>
                                                 <h3 className="font-semibold mb-1">{info.title}</h3>
                                                 {info.link ? (
                                                     <a
@@ -249,7 +284,7 @@ export default function ContactPage() {
 
                         {/* Map Placeholder */}
                         <motion.div
-                            initial={{ opacity: 0, x: 20 }}
+                            initial={{ opacity: 0, x: locale === 'ar' ? -20 : 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.4 }}
                         >
@@ -258,8 +293,8 @@ export default function ContactPage() {
                                     <MapPin className="w-12 h-12 text-muted-foreground" />
                                 </div>
                                 <CardContent className="p-4">
-                                    <p className="text-sm text-muted-foreground">
-                                        Visit our store or reach out to us using the contact information above.
+                                    <p className={`text-sm text-muted-foreground ${locale === 'ar' ? 'text-right' : ''}`}>
+                                        {t('contact.map.description')}
                                     </p>
                                 </CardContent>
                             </Card>
@@ -276,12 +311,12 @@ export default function ContactPage() {
                 >
                     <Card>
                         <CardContent className="p-8">
-                            <h3 className="text-xl font-bold mb-2">Looking for Quick Answers?</h3>
+                            <h3 className="text-xl font-bold mb-2">{t('contact.faqSection.title')}</h3>
                             <p className="text-muted-foreground mb-4">
-                                Check out our FAQ section for instant answers to common questions
+                                {t('contact.faqSection.description')}
                             </p>
-                            <Button variant="outline" onClick={() => window.location.href = '/faq'}>
-                                Visit FAQ
+                            <Button variant="outline" onClick={() => window.location.href = `/${locale}/faq`}>
+                                {t('contact.faqSection.visitFaq')}
                             </Button>
                         </CardContent>
                     </Card>

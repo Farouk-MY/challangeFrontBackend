@@ -60,7 +60,6 @@ export default function Navbar() {
     const navLinks = [
         { href: '/', label: t('nav.home'), icon: Home },
         { href: '/products', label: t('nav.products'), icon: ShoppingBag },
-        { href: '/categories', label: t('nav.categories'), icon: Grid3x3 },
         { href: '/about', label: t('nav.about'), icon: Info },
         { href: '/contact', label: t('nav.contact'), icon: Mail },
     ];

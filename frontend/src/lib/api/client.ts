@@ -94,12 +94,12 @@ apiClient.interceptors.response.use(
             _retry?: boolean;
         };
 
-        // Don't retry for auth endpoints
+        // ✅ Don't handle 401 for auth endpoints - let them fail naturally
         if (originalRequest.url?.includes('/auth/')) {
             return Promise.reject(error);
         }
 
-        // If error is 401 and we haven't retried yet
+        // ✅ If error is 401 and we haven't retried yet
         if (error.response?.status === 401 && !originalRequest._retry) {
             if (isRefreshing) {
                 // If already refreshing, queue this request
@@ -123,19 +123,11 @@ apiClient.interceptors.response.use(
             const refreshToken = tokenManager.getRefreshToken();
 
             if (!refreshToken) {
-                // No refresh token, clear and redirect
+                // ✅ No refresh token - just clear tokens and reject
+                // DON'T redirect - let the ProtectedRoute component handle it
                 isRefreshing = false;
                 tokenManager.clearTokens();
-
-                // Don't redirect if already on auth pages
-                if (typeof window !== 'undefined') {
-                    const isAuthPage = window.location.pathname.includes('/login') ||
-                        window.location.pathname.includes('/register');
-
-                    if (!isAuthPage) {
-                        window.location.href = '/login';
-                    }
-                }
+                console.log('⚠️ No refresh token found, clearing tokens');
                 return Promise.reject(error);
             }
 
@@ -168,13 +160,8 @@ apiClient.interceptors.response.use(
                 tokenManager.clearTokens();
                 isRefreshing = false;
 
-                if (typeof window !== 'undefined') {
-                    // Only redirect if not already on login page
-                    if (!window.location.pathname.includes('/login')) {
-                        window.location.href = '/login';
-                    }
-                }
-
+                // ✅ DON'T redirect here - let ProtectedRoute handle it
+                console.log('⚠️ Token refresh failed, tokens cleared');
                 return Promise.reject(refreshError);
             }
         }

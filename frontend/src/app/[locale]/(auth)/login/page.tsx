@@ -7,12 +7,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
 import { Link } from '@/i18n/routing';
-import { useLogin } from '@/lib/react-query/hooks';
+import { useLogin, useSendVerificationEmail } from '@/lib/react-query/hooks';
 import { loginSchema, type LoginInput } from '@/lib/validations/auth.validation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Eye, EyeOff, Mail, Lock, ShoppingBag, ArrowRight, Moon, Sun } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, ShoppingBag, ArrowRight, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -37,23 +38,38 @@ export default function LoginPage() {
     const t = useTranslations();
     const { theme, setTheme } = useTheme();
     const [showPassword, setShowPassword] = useState(false);
-    const { mutate: login, isPending } = useLogin();
+    const [verificationError, setVerificationError] = useState(false);
+    const [userEmail, setUserEmail] = useState('');
+
+    const { mutate: login, isPending, error } = useLogin();
+    const { mutate: resendVerification, isPending: isResending } = useSendVerificationEmail();
 
     const {
         register,
         handleSubmit,
         formState: { errors },
+        getValues,
     } = useForm<LoginInput>({
         resolver: zodResolver(loginSchema),
     });
 
     const onSubmit = (data: LoginInput) => {
-        login(data);
+        setUserEmail(data.email);
+        setVerificationError(false);
+
+        login(data, {
+            onError: (error: any) => {
+                // Check if it's a verification error (403)
+                if (error.response?.status === 403) {
+                    setVerificationError(true);
+                }
+            },
+        });
     };
 
     return (
         <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
-                        {/* Login Card */}
+            {/* Login Card */}
             <motion.div
                 initial="hidden"
                 animate="visible"
@@ -79,6 +95,34 @@ export default function LoginPage() {
                             {t('auth.loginTitle')}
                         </p>
                     </motion.div>
+
+                    {/* ✅ Verification Error Alert */}
+                    {verificationError && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="mb-6"
+                        >
+                            <Alert variant="destructive" className="border-amber-500 bg-amber-50 dark:bg-amber-950/20">
+                                <AlertCircle className="h-4 w-4 text-amber-600" />
+                                <AlertDescription className="text-amber-800 dark:text-amber-300">
+                                    <p className="font-semibold mb-2">Email Not Verified</p>
+                                    <p className="text-sm mb-3">
+                                        Please verify your email before logging in. Check your inbox for the verification link.
+                                    </p>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => resendVerification()}
+                                        disabled={isResending}
+                                        className="w-full border-amber-600 text-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/30"
+                                    >
+                                        {isResending ? 'Sending...' : 'Resend Verification Email'}
+                                    </Button>
+                                </AlertDescription>
+                            </Alert>
+                        </motion.div>
+                    )}
 
                     {/* Form */}
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -149,8 +193,8 @@ export default function LoginPage() {
                                     className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
                                 />
                                 <span className="text-slate-600 dark:text-slate-400">
-                  {t('auth.rememberMe')}
-                </span>
+                                    {t('auth.rememberMe')}
+                                </span>
                             </label>
                             <Link
                                 href="/forgot-password"
@@ -194,9 +238,9 @@ export default function LoginPage() {
                             <div className="w-full border-t border-slate-300 dark:border-slate-700" />
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white dark:bg-slate-900 px-3 text-slate-500 dark:text-slate-400">
-                Or
-              </span>
+                            <span className="bg-white dark:bg-slate-900 px-3 text-slate-500 dark:text-slate-400">
+                                Or
+                            </span>
                         </div>
                     </motion.div>
 

@@ -9,24 +9,21 @@ import {
 } from '@/types';
 
 export const authApi = {
-    // Register new user
+    // Register new user - ✅ UPDATED - Don't save tokens
     register: async (credentials: RegisterCredentials): Promise<ApiResponse<AuthResponse>> => {
         const response = await apiClient.post('/auth/register', credentials);
 
-        // Save tokens
-        if (response.data.success && response.data.data) {
-            const { accessToken, refreshToken } = response.data.data;
-            tokenManager.setTokens(accessToken, refreshToken);
-        }
+        // ❌ DON'T SAVE TOKENS - Backend won't send them anymore
+        // User must verify email before they can login
 
         return response.data;
     },
 
-    // Login user
+    // Login user - ✅ Already correct
     login: async (credentials: LoginCredentials): Promise<ApiResponse<AuthResponse>> => {
         const response = await apiClient.post('/auth/login', credentials);
 
-        // Save tokens
+        // Save tokens only on successful login (after verification)
         if (response.data.success && response.data.data) {
             const { accessToken, refreshToken } = response.data.data;
             tokenManager.setTokens(accessToken, refreshToken);

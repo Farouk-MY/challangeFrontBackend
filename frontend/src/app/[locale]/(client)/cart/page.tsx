@@ -66,15 +66,16 @@ export default function CartPage() {
     const shipping = subtotal > 50 ? 0 : 9.99;
     const discount = 0; // Calculate based on promo code
     const total = subtotal + shipping - discount;
+    const freeShippingAmount = (50 - subtotal).toFixed(2);
 
     if (!cart || cart.items.length === 0) {
         return (
-            <div className="min-h-screen bg-background py-12">
+            <div className="min-h-screen bg-background py-12" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
                 <div className="container-custom">
                     <EmptyState
                         icon={<ShoppingCart className="w-12 h-12 text-muted-foreground" />}
                         title={t('cart.emptyCart')}
-                        description="Looks like you haven't added any items yet"
+                        description={t('cart.emptyCart')}
                         action={{
                             label: t('cart.continueShopping'),
                             onClick: () => router.push('/products'),
@@ -86,7 +87,7 @@ export default function CartPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
+        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
             {/* Header */}
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 text-white py-12">
                 <div className="container-custom">
@@ -100,14 +101,14 @@ export default function CartPage() {
                                 {t('cart.title')}
                             </h1>
                             <p className="text-blue-100">
-                                {cart.items.length} {cart.items.length === 1 ? 'item' : 'items'} in your cart
+                                {cart.items.length} {cart.items.length === 1 ? t('cart.item') : t('cart.items')} {locale === 'ar' ? 'في سلتك' : 'in your cart'}
                             </p>
                         </div>
                         <div className="hidden md:flex items-center gap-4">
                             <div className="flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-sm rounded-lg">
                                 <ShoppingBag className="w-6 h-6" />
                                 <div>
-                                    <p className="text-sm text-blue-100">Subtotal</p>
+                                    <p className="text-sm text-blue-100">{t('cart.subtotal')}</p>
                                     <p className="text-xl font-bold">${subtotal.toFixed(2)}</p>
                                 </div>
                             </div>
@@ -121,29 +122,29 @@ export default function CartPage() {
                     {/* Cart Items */}
                     <div className="lg:col-span-2 space-y-4">
                         {/* Clear Cart Button */}
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-semibold">Your Items</h2>
+                        <div className={`flex items-center justify-between mb-6 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
+                            <h2 className="text-xl font-semibold">{t('cart.yourItems')}</h2>
                             <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                     <Button variant="ghost" size="sm" className="text-red-600 dark:text-red-400">
-                                        <Trash2 className="w-4 h-4 mr-2" />
-                                        Clear Cart
+                                        <Trash2 className={`w-4 h-4 ${locale === 'ar' ? 'ml-2' : 'mr-2'}`} />
+                                        {t('cart.clearCart')}
                                     </Button>
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>
                                     <AlertDialogHeader>
-                                        <AlertDialogTitle>Clear your cart?</AlertDialogTitle>
+                                        <AlertDialogTitle>{t('cart.clearCartConfirm')}</AlertDialogTitle>
                                         <AlertDialogDescription>
-                                            This will remove all items from your cart. This action cannot be undone.
+                                            {t('cart.clearCartDescription')}
                                         </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                                         <AlertDialogAction
                                             onClick={() => clearCart()}
                                             className="bg-red-600 hover:bg-red-700"
                                         >
-                                            Clear Cart
+                                            {t('cart.clearCart')}
                                         </AlertDialogAction>
                                     </AlertDialogFooter>
                                 </AlertDialogContent>
@@ -151,7 +152,7 @@ export default function CartPage() {
                         </div>
 
                         <AnimatePresence mode="popLayout">
-                            {cart.items.map((item, index) => {
+                            {cart.items.map((item:any, index:any) => {
                                 const productName =
                                     locale === 'ar' && item.product.nameAr
                                         ? item.product.nameAr
@@ -161,13 +162,13 @@ export default function CartPage() {
                                 return (
                                     <motion.div
                                         key={item.id}
-                                        initial={{ opacity: 0, x: -20 }}
+                                        initial={{ opacity: 0, x: locale === 'ar' ? 20 : -20 }}
                                         animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: 20 }}
+                                        exit={{ opacity: 0, x: locale === 'ar' ? -20 : 20 }}
                                         transition={{ delay: index * 0.05 }}
                                         className="group relative bg-card rounded-xl border border-border p-6 hover:shadow-lg transition-all"
                                     >
-                                        <div className="flex gap-6">
+                                        <div className={`flex gap-6 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
                                             {/* Product Image */}
                                             <Link
                                                 href={`/products/${item.product.id}`}
@@ -182,8 +183,8 @@ export default function CartPage() {
 
                                             {/* Product Info */}
                                             <div className="flex-1 min-w-0">
-                                                <div className="flex items-start justify-between gap-4 mb-3">
-                                                    <div className="flex-1">
+                                                <div className={`flex items-start justify-between gap-4 mb-3 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
+                                                    <div className={`flex-1 ${locale === 'ar' ? 'text-right' : ''}`}>
                                                         <Link
                                                             href={`/products/${item.product.id}`}
                                                             className="font-semibold text-lg hover:text-primary transition-colors line-clamp-2"
@@ -207,8 +208,8 @@ export default function CartPage() {
                                                 </div>
 
                                                 {/* Price & Quantity */}
-                                                <div className="flex items-center justify-between mt-4">
-                                                    <div className="flex items-center gap-3">
+                                                <div className={`flex items-center justify-between mt-4 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
+                                                    <div className={`flex items-center gap-3 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
                                                         <div className="flex items-center border rounded-lg">
                                                             <Button
                                                                 variant="ghost"
@@ -239,16 +240,16 @@ export default function CartPage() {
                                                             </Button>
                                                         </div>
                                                         <span className="text-xs text-muted-foreground">
-                              {item.product.stock} available
+                              {item.product.stock} {t('cart.available')}
                             </span>
                                                     </div>
 
-                                                    <div className="text-right">
+                                                    <div className={`${locale === 'ar' ? 'text-left' : 'text-right'}`}>
                                                         <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                                                             ${(item.product.price * item.quantity).toFixed(2)}
                                                         </p>
                                                         <p className="text-xs text-muted-foreground">
-                                                            ${item.product.price.toFixed(2)} each
+                                                            ${item.product.price.toFixed(2)} {t('cart.each')}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -269,27 +270,27 @@ export default function CartPage() {
                         >
                             {/* Summary Card */}
                             <div className="bg-card rounded-xl border border-border p-6 space-y-4">
-                                <h2 className="text-xl font-semibold">Order Summary</h2>
+                                <h2 className={`text-xl font-semibold ${locale === 'ar' ? 'text-right' : ''}`}>{t('cart.orderSummary')}</h2>
                                 <Separator />
 
                                 <div className="space-y-3">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">Subtotal</span>
+                                    <div className={`flex justify-between text-sm ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
+                                        <span className="text-muted-foreground">{t('cart.subtotal')}</span>
                                         <span className="font-medium">${subtotal.toFixed(2)}</span>
                                     </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">Shipping</span>
+                                    <div className={`flex justify-between text-sm ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
+                                        <span className="text-muted-foreground">{t('cart.shipping')}</span>
                                         <span className="font-medium">
                       {shipping === 0 ? (
-                          <span className="text-green-600 dark:text-green-400">FREE</span>
+                          <span className="text-green-600 dark:text-green-400">{t('cart.free')}</span>
                       ) : (
                           `$${shipping.toFixed(2)}`
                       )}
                     </span>
                                     </div>
                                     {discount > 0 && (
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-muted-foreground">Discount</span>
+                                        <div className={`flex justify-between text-sm ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
+                                            <span className="text-muted-foreground">{t('cart.discount')}</span>
                                             <span className="font-medium text-green-600 dark:text-green-400">
                         -${discount.toFixed(2)}
                       </span>
@@ -297,8 +298,11 @@ export default function CartPage() {
                                     )}
                                     {subtotal <= 50 && (
                                         <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
-                                            <p className="text-xs text-blue-700 dark:text-blue-300">
-                                                🎉 Add ${(50 - subtotal).toFixed(2)} more for FREE shipping!
+                                            <p className={`text-xs text-blue-700 dark:text-blue-300 ${locale === 'ar' ? 'text-right' : ''}`}>
+                                                {locale === 'ar'
+                                                    ? `🎉 أضف $${freeShippingAmount} للحصول على شحن مجاني!`
+                                                    : `🎉 Add $${freeShippingAmount} more for FREE shipping!`
+                                                }
                                             </p>
                                         </div>
                                     )}
@@ -306,8 +310,8 @@ export default function CartPage() {
 
                                 <Separator />
 
-                                <div className="flex justify-between text-lg font-bold">
-                                    <span>Total</span>
+                                <div className={`flex justify-between text-lg font-bold ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
+                                    <span>{t('cart.total')}</span>
                                     <span className="text-2xl text-primary">
                     ${total.toFixed(2)}
                   </span>
@@ -319,7 +323,7 @@ export default function CartPage() {
                                     onClick={() => router.push('/checkout')}
                                 >
                                     {t('cart.checkout')}
-                                    <ArrowRight className="w-5 h-5 ml-2" />
+                                    <ArrowRight className={`w-5 h-5 ${locale === 'ar' ? 'mr-2 rotate-180' : 'ml-2'}`} />
                                 </Button>
 
                                 <Button
@@ -334,32 +338,33 @@ export default function CartPage() {
 
                             {/* Promo Code */}
                             <div className="bg-card rounded-xl border border-border p-6">
-                                <h3 className="font-semibold mb-3 flex items-center gap-2">
+                                <h3 className={`font-semibold mb-3 flex items-center gap-2 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
                                     <Tag className="w-5 h-5 text-primary" />
-                                    Promo Code
+                                    {t('cart.promoCode')}
                                 </h3>
-                                <div className="flex gap-2">
+                                <div className={`flex gap-2 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
                                     <Input
-                                        placeholder="Enter code"
+                                        placeholder={t('cart.enterCode')}
                                         value={promoCode}
                                         onChange={(e) => setPromoCode(e.target.value)}
+                                        className={locale === 'ar' ? 'text-right' : ''}
                                     />
-                                    <Button variant="outline">Apply</Button>
+                                    <Button variant="outline">{t('cart.apply')}</Button>
                                 </div>
                             </div>
 
                             {/* Trust Badges */}
                             <div className="grid grid-cols-2 gap-3">
-                                <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
+                                <div className={`flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950/30 rounded-lg ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
                                     <Lock className="w-5 h-5 text-green-600 dark:text-green-400" />
                                     <span className="text-xs font-medium text-green-700 dark:text-green-300">
-                    Secure Payment
+                    {t('cart.securePayment')}
                   </span>
                                 </div>
-                                <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                                <div className={`flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
                                     <Truck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                                     <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
-                    Fast Delivery
+                    {t('cart.fastDelivery')}
                   </span>
                                 </div>
                             </div>

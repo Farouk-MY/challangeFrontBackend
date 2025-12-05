@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { motion } from 'framer-motion';
 import { Search, SlidersHorizontal, Grid3x3, List, X } from 'lucide-react';
 import { useProducts } from '@/lib/react-query/hooks/useProducts';
+import { useCategories } from '@/lib/react-query/hooks/useCategories';
 import ProductCard from '@/components/client/ProductCard';
 import { ProductsGridSkeleton } from '@/components/shared/LoadingSpinner';
 import ErrorDisplay from '@/components/shared/ErrorBoundary';
@@ -28,9 +29,11 @@ import {
 } from '@/components/ui/sheet';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import { Badge } from '@/components/ui/badge';
 
 export default function ProductsPage() {
     const t = useTranslations();
+    const locale = useLocale();
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -57,6 +60,10 @@ export default function ProductsPage() {
         minPrice: minPrice > 0 ? minPrice.toString() : undefined,
         maxPrice: maxPrice < 1000 ? maxPrice.toString() : undefined,
     });
+
+    // Fetch categories
+    const { data: categoriesData } = useCategories();
+    const categories = categoriesData?.data?.categories || [];
 
     const products = data?.data?.products || [];
     const pagination = data?.data?.pagination;
@@ -92,6 +99,13 @@ export default function ProductsPage() {
     const hasActiveFilters =
         currentSearch || currentCategory || minPrice > 0 || maxPrice < 1000;
 
+    // Get category name
+    const getCategoryName = (categoryId: string) => {
+        const category = categories.find(c => c.id === categoryId);
+        if (!category) return '';
+        return locale === 'ar' && category.nameAr ? category.nameAr : category.name;
+    };
+
     return (
         <div className="min-h-screen bg-background">
             {/* Header */}
@@ -99,7 +113,7 @@ export default function ProductsPage() {
                 <div className="container-custom py-8">
                     <h1 className="text-3xl font-bold mb-2">{t('products.title')}</h1>
                     <p className="text-muted-foreground">
-                        Discover our wide selection of quality products
+                        {t('productsPage.subtitle')}
                     </p>
                 </div>
             </div>
@@ -110,7 +124,7 @@ export default function ProductsPage() {
                     <aside className="hidden lg:block space-y-6">
                         <div className="bg-card rounded-lg border border-border p-6 sticky top-20">
                             <div className="flex items-center justify-between mb-6">
-                                <h2 className="font-semibold text-lg">Filters</h2>
+                                <h2 className="font-semibold text-lg">{t('productsPage.filters')}</h2>
                                 {hasActiveFilters && (
                                     <Button
                                         variant="ghost"
@@ -118,17 +132,17 @@ export default function ProductsPage() {
                                         onClick={clearFilters}
                                         className="text-red-600 dark:text-red-400"
                                     >
-                                        Clear All
+                                        {t('productsPage.clearAll')}
                                     </Button>
                                 )}
                             </div>
 
                             {/* Search */}
                             <div className="space-y-2 mb-6">
-                                <Label>Search</Label>
+                                <Label>{t('productsPage.search')}</Label>
                                 <div className="flex gap-2">
                                     <Input
-                                        placeholder="Search products..."
+                                        placeholder={t('productsPage.searchPlaceholder')}
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -139,9 +153,33 @@ export default function ProductsPage() {
                                 </div>
                             </div>
 
+                            {/* Categories */}
+                            <div className="space-y-2 mb-6 pb-6 border-b">
+                                <Label>{t('nav.categories')}</Label>
+                                <div className="space-y-2">
+                                    <Button
+                                        variant={!currentCategory ? 'secondary' : 'ghost'}
+                                        className="w-full justify-start"
+                                        onClick={() => updateParams('category', '')}
+                                    >
+                                        {t('productsPage.allCategories')}
+                                    </Button>
+                                    {categories.map((category) => (
+                                        <Button
+                                            key={category.id}
+                                            variant={currentCategory === category.id ? 'secondary' : 'ghost'}
+                                            className="w-full justify-start"
+                                            onClick={() => updateParams('category', category.id)}
+                                        >
+                                            {locale === 'ar' && category.nameAr ? category.nameAr : category.name}
+                                        </Button>
+                                    ))}
+                                </div>
+                            </div>
+
                             {/* Price Range */}
                             <div className="space-y-4 mb-6 pb-6 border-b">
-                                <Label>Price Range</Label>
+                                <Label>{t('productsPage.priceRange')}</Label>
                                 <div className="space-y-4">
                                     <Slider
                                         min={0}
@@ -155,30 +193,30 @@ export default function ProductsPage() {
                                         className="w-full"
                                     />
                                     <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      ${minPrice}
-                    </span>
                                         <span className="text-muted-foreground">
-                      ${maxPrice}
-                    </span>
+                                            ${minPrice}
+                                        </span>
+                                        <span className="text-muted-foreground">
+                                            ${maxPrice}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Sort */}
                             <div className="space-y-2">
-                                <Label>Sort By</Label>
+                                <Label>{t('productsPage.sortBy')}</Label>
                                 <Select value={currentSort} onValueChange={(v) => updateParams('sort', v)}>
                                     <SelectTrigger>
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="newest">Newest First</SelectItem>
-                                        <SelectItem value="oldest">Oldest First</SelectItem>
-                                        <SelectItem value="price_asc">Price: Low to High</SelectItem>
-                                        <SelectItem value="price_desc">Price: High to Low</SelectItem>
-                                        <SelectItem value="name_asc">Name: A to Z</SelectItem>
-                                        <SelectItem value="name_desc">Name: Z to A</SelectItem>
+                                        <SelectItem value="newest">{t('productsPage.sort.newest')}</SelectItem>
+                                        <SelectItem value="oldest">{t('productsPage.sort.oldest')}</SelectItem>
+                                        <SelectItem value="price_asc">{t('productsPage.sort.priceLowHigh')}</SelectItem>
+                                        <SelectItem value="price_desc">{t('productsPage.sort.priceHighLow')}</SelectItem>
+                                        <SelectItem value="name_asc">{t('productsPage.sort.nameAZ')}</SelectItem>
+                                        <SelectItem value="name_desc">{t('productsPage.sort.nameZA')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -191,7 +229,7 @@ export default function ProductsPage() {
                         <div className="flex items-center justify-between gap-4">
                             <div className="flex-1 flex items-center gap-2">
                                 <Input
-                                    placeholder="Search products..."
+                                    placeholder={t('productsPage.searchPlaceholder')}
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -229,20 +267,44 @@ export default function ProductsPage() {
                                 <SheetTrigger asChild>
                                     <Button variant="outline" className="lg:hidden">
                                         <SlidersHorizontal className="w-4 h-4 mr-2" />
-                                        Filters
+                                        {t('productsPage.filters')}
                                     </Button>
                                 </SheetTrigger>
                                 <SheetContent side="left" className="w-80">
                                     <SheetHeader>
-                                        <SheetTitle>Filters</SheetTitle>
+                                        <SheetTitle>{t('productsPage.filters')}</SheetTitle>
                                         <SheetDescription>
-                                            Refine your product search
+                                            {t('productsPage.refineSearch')}
                                         </SheetDescription>
                                     </SheetHeader>
                                     <div className="mt-6 space-y-6">
-                                        {/* Mobile filters content - same as desktop */}
+                                        {/* Categories */}
+                                        <div className="space-y-2">
+                                            <Label>{t('nav.categories')}</Label>
+                                            <div className="space-y-2">
+                                                <Button
+                                                    variant={!currentCategory ? 'secondary' : 'ghost'}
+                                                    className="w-full justify-start"
+                                                    onClick={() => updateParams('category', '')}
+                                                >
+                                                    {t('productsPage.allCategories')}
+                                                </Button>
+                                                {categories.map((category) => (
+                                                    <Button
+                                                        key={category.id}
+                                                        variant={currentCategory === category.id ? 'secondary' : 'ghost'}
+                                                        className="w-full justify-start"
+                                                        onClick={() => updateParams('category', category.id)}
+                                                    >
+                                                        {locale === 'ar' && category.nameAr ? category.nameAr : category.name}
+                                                    </Button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Price Range */}
                                         <div className="space-y-4">
-                                            <Label>Price Range</Label>
+                                            <Label>{t('productsPage.priceRange')}</Label>
                                             <Slider
                                                 min={0}
                                                 max={1000}
@@ -259,16 +321,17 @@ export default function ProductsPage() {
                                             </div>
                                         </div>
 
+                                        {/* Sort */}
                                         <div className="space-y-2">
-                                            <Label>Sort By</Label>
+                                            <Label>{t('productsPage.sortBy')}</Label>
                                             <Select value={currentSort} onValueChange={(v) => updateParams('sort', v)}>
                                                 <SelectTrigger>
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="newest">Newest First</SelectItem>
-                                                    <SelectItem value="price_asc">Price: Low to High</SelectItem>
-                                                    <SelectItem value="price_desc">Price: High to Low</SelectItem>
+                                                    <SelectItem value="newest">{t('productsPage.sort.newest')}</SelectItem>
+                                                    <SelectItem value="price_asc">{t('productsPage.sort.priceLowHigh')}</SelectItem>
+                                                    <SelectItem value="price_desc">{t('productsPage.sort.priceHighLow')}</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -277,30 +340,67 @@ export default function ProductsPage() {
                                             className="w-full"
                                             onClick={() => setFiltersOpen(false)}
                                         >
-                                            Apply Filters
+                                            {t('productsPage.applyFilters')}
                                         </Button>
                                     </div>
                                 </SheetContent>
                             </Sheet>
                         </div>
 
+                        {/* Active Filters */}
+                        {hasActiveFilters && (
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-sm text-muted-foreground">{t('productsPage.activeFilters')}:</span>
+                                {currentCategory && (
+                                    <Badge variant="secondary" className="gap-2">
+                                        {getCategoryName(currentCategory)}
+                                        <X
+                                            className="w-3 h-3 cursor-pointer"
+                                            onClick={() => updateParams('category', '')}
+                                        />
+                                    </Badge>
+                                )}
+                                {currentSearch && (
+                                    <Badge variant="secondary" className="gap-2">
+                                        {t('productsPage.search')}: {currentSearch}
+                                        <X
+                                            className="w-3 h-3 cursor-pointer"
+                                            onClick={() => {
+                                                setSearchQuery('');
+                                                updateParams('search', '');
+                                            }}
+                                        />
+                                    </Badge>
+                                )}
+                                {(minPrice > 0 || maxPrice < 1000) && (
+                                    <Badge variant="secondary" className="gap-2">
+                                        ${minPrice} - ${maxPrice}
+                                        <X
+                                            className="w-3 h-3 cursor-pointer"
+                                            onClick={() => {
+                                                setMinPrice(0);
+                                                setMaxPrice(1000);
+                                            }}
+                                        />
+                                    </Badge>
+                                )}
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={clearFilters}
+                                    className="text-red-600 dark:text-red-400 h-7"
+                                >
+                                    {t('productsPage.clearAll')}
+                                </Button>
+                            </div>
+                        )}
+
                         {/* Results Count */}
                         {!isLoading && (
                             <div className="flex items-center justify-between">
                                 <p className="text-sm text-muted-foreground">
-                                    {pagination?.total || 0} products found
+                                    {t('productsPage.productsFound', { count: pagination?.total || 0 })}
                                 </p>
-                                {hasActiveFilters && (
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={clearFilters}
-                                        className="text-red-600 dark:text-red-400"
-                                    >
-                                        <X className="w-4 h-4 mr-2" />
-                                        Clear Filters
-                                    </Button>
-                                )}
                             </div>
                         )}
 
@@ -309,16 +409,16 @@ export default function ProductsPage() {
                             <ProductsGridSkeleton count={12} />
                         ) : error ? (
                             <ErrorDisplay
-                                title="Failed to load products"
-                                message="We couldn't load the products. Please try again later."
+                                title={t('productsPage.error')}
+                                message={t('productsPage.errorMessage')}
                                 showHomeButton={false}
                             />
                         ) : products.length === 0 ? (
                             <div className="text-center py-12">
                                 <p className="text-muted-foreground mb-4">
-                                    No products found matching your criteria
+                                    {t('productsPage.noProducts')}
                                 </p>
-                                <Button onClick={clearFilters}>Clear Filters</Button>
+                                <Button onClick={clearFilters}>{t('productsPage.clearFilters')}</Button>
                             </div>
                         ) : (
                             <div
@@ -349,13 +449,12 @@ export default function ProductsPage() {
                                     disabled={pagination.page === 1}
                                     onClick={() => updateParams('page', String(pagination.page - 1))}
                                 >
-                                    Previous
+                                    {t('productsPage.previous')}
                                 </Button>
 
                                 <div className="flex items-center gap-2">
                                     {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
                                         .filter((page) => {
-                                            // Show first, last, current, and adjacent pages
                                             return (
                                                 page === 1 ||
                                                 page === pagination.totalPages ||
@@ -366,8 +465,8 @@ export default function ProductsPage() {
                                             <>
                                                 {index > 0 && array[index - 1] !== page - 1 && (
                                                     <span key={`ellipsis-${page}`} className="px-2">
-                            ...
-                          </span>
+                                                        ...
+                                                    </span>
                                                 )}
                                                 <Button
                                                     key={page}
@@ -386,7 +485,7 @@ export default function ProductsPage() {
                                     disabled={pagination.page === pagination.totalPages}
                                     onClick={() => updateParams('page', String(pagination.page + 1))}
                                 >
-                                    Next
+                                    {t('productsPage.next')}
                                 </Button>
                             </div>
                         )}

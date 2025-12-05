@@ -37,26 +37,26 @@ export default function HomePage() {
     const features = [
         {
             icon: Zap,
-            title: 'Fast Delivery',
-            description: 'Get your orders delivered within 24-48 hours',
+            title: t('home.features.fastDelivery.title'),
+            description: t('home.features.fastDelivery.description'),
             gradient: 'from-yellow-500 to-orange-500',
         },
         {
             icon: Shield,
-            title: 'Secure Payment',
-            description: '100% secure and encrypted payment process',
+            title: t('home.features.securePayment.title'),
+            description: t('home.features.securePayment.description'),
             gradient: 'from-green-500 to-emerald-500',
         },
         {
             icon: Truck,
-            title: 'Free Shipping',
-            description: 'Free shipping on orders over $50',
+            title: t('home.features.freeShipping.title'),
+            description: t('home.features.freeShipping.description'),
             gradient: 'from-blue-500 to-indigo-500',
         },
         {
             icon: ShoppingBag,
-            title: 'Easy Returns',
-            description: '30-day money back guarantee',
+            title: t('home.features.easyReturns.title'),
+            description: t('home.features.easyReturns.description'),
             gradient: 'from-purple-500 to-pink-500',
         },
     ];
@@ -75,26 +75,25 @@ export default function HomePage() {
                             className="space-y-8"
                         >
                             <motion.div variants={itemVariants} className="inline-block">
-                <span className="px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-semibold">
-                  ✨ Welcome to {t('common.appName')}
-                </span>
+                                <span className="px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-semibold">
+                                    ✨ {t('home.hero.welcomeBadge')}
+                                </span>
                             </motion.div>
 
                             <motion.h1
                                 variants={itemVariants}
                                 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight"
                             >
-                                Discover Amazing{' '}
-                                <span className="text-gradient-primary">Products</span> for Your
-                                Lifestyle
+                                {t('home.hero.title')}{' '}
+                                <span className="text-gradient-primary">{t('home.hero.titleHighlight')}</span>{' '}
+                                {t('home.hero.titleEnd')}
                             </motion.h1>
 
                             <motion.p
                                 variants={itemVariants}
                                 className="text-lg text-muted-foreground max-w-xl"
                             >
-                                Shop the latest trends in fashion, electronics, home decor, and
-                                more. Quality products at unbeatable prices.
+                                {t('home.hero.description')}
                             </motion.p>
 
                             <motion.div
@@ -103,7 +102,7 @@ export default function HomePage() {
                             >
                                 <Button size="lg" className="gradient-primary group" asChild>
                                     <Link href="/products">
-                                        {t('nav.shop')} Now
+                                        {t('home.hero.shopNow')}
                                         <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                     </Link>
                                 </Button>
@@ -122,20 +121,24 @@ export default function HomePage() {
                                         10K+
                                     </h3>
                                     <p className="text-sm text-muted-foreground">
-                                        Happy Customers
+                                        {t('home.stats.customers')}
                                     </p>
                                 </div>
                                 <div>
                                     <h3 className="text-3xl font-bold text-gradient-success">
                                         500+
                                     </h3>
-                                    <p className="text-sm text-muted-foreground">Products</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {t('home.stats.products')}
+                                    </p>
                                 </div>
                                 <div>
                                     <h3 className="text-3xl font-bold text-gradient-primary">
                                         4.9
                                     </h3>
-                                    <p className="text-sm text-muted-foreground">Rating</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {t('home.stats.rating')}
+                                    </p>
                                 </div>
                             </motion.div>
                         </motion.div>
@@ -150,7 +153,7 @@ export default function HomePage() {
                             <div className="relative aspect-square rounded-2xl overflow-hidden">
                                 <img
                                     src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80"
-                                    alt="Hero"
+                                    alt={t('home.hero.imageAlt')}
                                     className="w-full h-full object-cover"
                                 />
                                 {/* Floating Badge */}
@@ -165,9 +168,9 @@ export default function HomePage() {
                                         </div>
                                         <div>
                                             <p className="text-xs text-muted-foreground">
-                                                Trusted by
+                                                {t('home.hero.trustedBy')}
                                             </p>
-                                            <p className="font-bold">10,000+ Users</p>
+                                            <p className="font-bold">{t('home.hero.trustedUsers')}</p>
                                         </div>
                                     </div>
                                 </motion.div>
@@ -220,7 +223,7 @@ export default function HomePage() {
                                 {t('products.featured')}
                             </h2>
                             <p className="text-muted-foreground">
-                                Handpicked products just for you
+                                {t('home.featuredProducts.subtitle')}
                             </p>
                         </div>
                         <Button variant="outline" asChild>
@@ -235,14 +238,14 @@ export default function HomePage() {
                         <ProductsGridSkeleton count={8} />
                     ) : featuredError ? (
                         <ErrorDisplay
-                            title="Failed to load products"
-                            message="We couldn't load featured products. Please try again later."
+                            title={t('home.featuredProducts.error')}
+                            message={t('home.featuredProducts.errorMessage')}
                             showHomeButton={false}
                         />
                     ) : featuredProducts.length === 0 ? (
                         <div className="text-center py-12">
                             <p className="text-muted-foreground">
-                                No featured products available
+                                {t('home.featuredProducts.noProducts')}
                             </p>
                         </div>
                     ) : (
@@ -265,15 +268,14 @@ export default function HomePage() {
                         className="max-w-3xl mx-auto space-y-6"
                     >
                         <h2 className="text-3xl md:text-4xl font-bold">
-                            Ready to Start Shopping?
+                            {t('home.cta.title')}
                         </h2>
                         <p className="text-lg text-blue-100">
-                            Join thousands of happy customers and discover amazing products
-                            today!
+                            {t('home.cta.description')}
                         </p>
                         <div className="flex flex-wrap gap-4 justify-center">
                             <Button size="lg" variant="secondary" asChild>
-                                <Link href="/products">Browse Products</Link>
+                                <Link href="/products">{t('home.cta.browseProducts')}</Link>
                             </Button>
                             <Button
                                 size="lg"
@@ -281,7 +283,7 @@ export default function HomePage() {
                                 className="bg-transparent border-white text-white hover:bg-white hover:text-primary"
                                 asChild
                             >
-                                <Link href="/register">Create Account</Link>
+                                <Link href="/register">{t('home.cta.createAccount')}</Link>
                             </Button>
                         </div>
                     </motion.div>

@@ -13,6 +13,7 @@ import {
 } from '../validators/auth.validator';
 
 // Register new user
+// Register new user - UPDATED VERSION
 export const register = async (
     req: Request,
     res: Response,
@@ -35,12 +36,17 @@ export const register = async (
         // Hash password
         const hashedPassword = await hashPassword(password);
 
-        // Create user
+        // ✅ Generate verification token IMMEDIATELY
+        const verificationToken = generateToken();
+
+        // Create user with verification token
         const user = await prisma.user.create({
             data: {
                 name,
                 email,
                 password: hashedPassword,
+                verificationToken, // ✅ Save token
+                isVerified: false, // ✅ Set as not verified
             },
             select: {
                 id: true,
@@ -48,37 +54,38 @@ export const register = async (
                 email: true,
                 role: true,
                 avatar: true,
+                isVerified: true,
                 createdAt: true,
             },
         });
 
-        // Generate tokens
-        const accessToken = generateAccessToken({
-            userId: user.id,
-            email: user.email,
-            role: user.role,
-        });
+        // ✅ Create verification URL
+        const verificationUrl = `${config.frontendUrl}/verify-email?token=${verificationToken}`;
 
-        const refreshToken = generateRefreshToken({
-            userId: user.id,
-            email: user.email,
-            role: user.role,
-        });
+        // ✅ Send verification email (async - don't wait)
+        sendEmail({
+            to: user.email,
+            subject: 'Verify Your Email - NeonShop',
+            html: emailTemplates.verifyEmail(user.name, verificationUrl),
+        }).catch(err => console.error('Failed to send verification email:', err));
 
-        // Send welcome email (don't wait for it)
+        // ✅ Also send welcome email
         sendEmail({
             to: user.email,
             subject: 'Welcome to NeonShop!',
             html: emailTemplates.welcome(user.name),
         }).catch(err => console.error('Failed to send welcome email:', err));
 
+        // ❌ DON'T GENERATE TOKENS - User must verify first!
+        // ❌ REMOVED: const accessToken = generateAccessToken(...);
+        // ❌ REMOVED: const refreshToken = generateRefreshToken(...);
+
         res.status(201).json({
             success: true,
-            message: 'User registered successfully',
+            message: 'Registration successful! Please check your email to verify your account.',
             data: {
-                user,
-                accessToken,
-                refreshToken,
+                user, // ✅ Return user but NO TOKENS
+                // ❌ REMOVED: accessToken, refreshToken
             },
         });
     } catch (error) {
@@ -87,6 +94,7 @@ export const register = async (
 };
 
 // Login user
+// Login user - UPDATED VERSION
 export const login = async (
     req: Request,
     res: Response,
@@ -111,6 +119,11 @@ export const login = async (
 
         if (!isPasswordValid) {
             throw new AppError('Invalid email or password', 401);
+        }
+
+        // ✅ CHECK IF EMAIL IS VERIFIED
+        if (!user.isVerified) {
+            throw new AppError('Please verify your email before logging in. Check your inbox for the verification link.', 403);
         }
 
         // Generate tokens

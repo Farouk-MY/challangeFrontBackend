@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/routing';
+import { Link, usePathname } from '@/i18n/routing';
 import {
     ShoppingBag,
     Mail,
@@ -27,8 +27,12 @@ import { motion } from 'framer-motion';
 
 export default function Footer() {
     const t = useTranslations();
+    const pathname = usePathname();
     const [email, setEmail] = useState('');
     const [subscribed, setSubscribed] = useState(false);
+
+    // Only show newsletter on home page
+    const showNewsletter = pathname === '/';
 
     const footerLinks = {
         shop: [
@@ -60,9 +64,9 @@ export default function Footer() {
     ];
 
     const features = [
-        { icon: Truck, title: 'Fast Delivery', desc: 'Within 2-3 days' },
-        { icon: Shield, title: 'Secure Payment', desc: '100% protected' },
-        { icon: Headphones, title: '24/7 Support', desc: 'Always here' },
+        { icon: Truck, title: t('footer.features.fastDelivery.title'), desc: t('footer.features.fastDelivery.desc') },
+        { icon: Shield, title: t('footer.features.securePayment.title'), desc: t('footer.features.securePayment.desc') },
+        { icon: Headphones, title: t('footer.features.support.title'), desc: t('footer.features.support.desc') },
     ];
 
     const handleSubscribe = (e: React.FormEvent) => {
@@ -111,74 +115,76 @@ export default function Footer() {
                     </div>
                 </div>
 
-                {/* Newsletter Section */}
-                <div className="border-b border-slate-200 dark:border-slate-800">
-                    <div className="container-custom py-12 lg:py-16">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-8 lg:p-12 shadow-2xl"
-                        >
-                            {/* Decorative Background */}
-                            <div className="absolute inset-0 opacity-10">
-                                <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl -mr-48 -mt-48" />
-                                <div className="absolute bottom-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl -ml-48 -mb-48" />
-                            </div>
-
-                            <div className="relative z-10 grid lg:grid-cols-2 gap-8 items-center">
-                                <div className="text-white">
-                                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full backdrop-blur-sm mb-4">
-                                        <Sparkles className="w-4 h-4" />
-                                        <span className="text-xs font-bold uppercase tracking-wider">Newsletter</span>
-                                    </div>
-                                    <h3 className="text-3xl lg:text-4xl font-black mb-3 leading-tight">
-                                        Join Our Community!
-                                    </h3>
-                                    <p className="text-blue-50 text-base lg:text-lg font-medium">
-                                        Get exclusive deals, early access to sales, and special offers straight to your inbox.
-                                    </p>
+                {/* Newsletter Section - Only on Home Page */}
+                {showNewsletter && (
+                    <div className="border-b border-slate-200 dark:border-slate-800">
+                        <div className="container-custom py-12 lg:py-16">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-8 lg:p-12 shadow-2xl"
+                            >
+                                {/* Decorative Background */}
+                                <div className="absolute inset-0 opacity-10">
+                                    <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl -mr-48 -mt-48" />
+                                    <div className="absolute bottom-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl -ml-48 -mb-48" />
                                 </div>
 
-                                <form onSubmit={handleSubscribe} className="space-y-4">
-                                    <div className="flex flex-col sm:flex-row gap-3">
-                                        <div className="relative flex-1">
-                                            <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                                            <Input
-                                                type="email"
-                                                placeholder="Enter your email address"
-                                                value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
-                                                className="pl-12 h-14 bg-white dark:bg-slate-900 border-0 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 font-medium shadow-lg"
-                                                required
-                                            />
+                                <div className="relative z-10 grid lg:grid-cols-2 gap-8 items-center">
+                                    <div className="text-white">
+                                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full backdrop-blur-sm mb-4">
+                                            <Sparkles className="w-4 h-4" />
+                                            <span className="text-xs font-bold uppercase tracking-wider">Newsletter</span>
                                         </div>
-                                        <Button
-                                            type="submit"
-                                            size="lg"
-                                            className="h-14 px-8 bg-white hover:bg-slate-50 text-blue-600 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all"
-                                        >
-                                            {subscribed ? (
-                                                <>
-                                                    <Check className="w-5 h-5 mr-2" />
-                                                    Subscribed!
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Send className="w-5 h-5 mr-2" />
-                                                    Subscribe
-                                                </>
-                                            )}
-                                        </Button>
+                                        <h3 className="text-3xl lg:text-4xl font-black mb-3 leading-tight">
+                                            {t('footer.newsletter.title')}
+                                        </h3>
+                                        <p className="text-blue-50 text-base lg:text-lg font-medium">
+                                            {t('footer.newsletter.description')}
+                                        </p>
                                     </div>
-                                    <p className="text-xs text-blue-100 font-medium">
-                                        🎁 Get 10% off your first order when you subscribe!
-                                    </p>
-                                </form>
-                            </div>
-                        </motion.div>
+
+                                    <form onSubmit={handleSubscribe} className="space-y-4">
+                                        <div className="flex flex-col sm:flex-row gap-3">
+                                            <div className="relative flex-1">
+                                                <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                                <Input
+                                                    type="email"
+                                                    placeholder={t('footer.newsletter.placeholder')}
+                                                    value={email}
+                                                    onChange={(e) => setEmail(e.target.value)}
+                                                    className="pl-12 h-14 bg-white dark:bg-slate-900 border-0 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 font-medium shadow-lg"
+                                                    required
+                                                />
+                                            </div>
+                                            <Button
+                                                type="submit"
+                                                size="lg"
+                                                className="h-14 px-8 bg-white hover:bg-slate-50 text-blue-600 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all"
+                                            >
+                                                {subscribed ? (
+                                                    <>
+                                                        <Check className="w-5 h-5 mr-2" />
+                                                        {t('footer.newsletter.subscribed')}
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Send className="w-5 h-5 mr-2" />
+                                                        {t('footer.newsletter.subscribe')}
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
+                                        <p className="text-xs text-blue-100 font-medium">
+                                            {t('footer.newsletter.offer')}
+                                        </p>
+                                    </form>
+                                </div>
+                            </motion.div>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* Main Footer Content */}
                 <div className="container-custom py-12 lg:py-16">
@@ -205,7 +211,7 @@ export default function Footer() {
                             </Link>
 
                             <p className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed">
-                                Your trusted destination for premium products. Quality, affordability, and exceptional service in one place.
+                                {t('footer.brandDescription')}
                             </p>
 
                             {/* Contact Info */}
@@ -256,9 +262,9 @@ export default function Footer() {
 
                         {/* Customer Links */}
                         <div className="lg:col-span-2 space-y-5">
-                            <h4 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+                            <h4 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                                 <span className="w-1.5 h-5 bg-gradient-to-b from-blue-600 to-indigo-600 rounded-full" />
-                                Customer
+                                {t('footer.customer')}
                             </h4>
                             <ul className="space-y-3">
                                 {footerLinks.customer.map((link) => (
@@ -279,7 +285,7 @@ export default function Footer() {
                         <div className="lg:col-span-2 space-y-5">
                             <h4 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
                                 <span className="w-1.5 h-5 bg-gradient-to-b from-blue-600 to-indigo-600 rounded-full" />
-                                Company
+                                {t('footer.company')}
                             </h4>
                             <ul className="space-y-3">
                                 {footerLinks.company.map((link) => (
@@ -301,7 +307,7 @@ export default function Footer() {
                             <div>
                                 <h4 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                                     <span className="w-1.5 h-5 bg-gradient-to-b from-blue-600 to-indigo-600 rounded-full" />
-                                    Follow Us
+                                    {t('footer.followUs')}
                                 </h4>
                                 <div className="flex flex-wrap gap-2.5">
                                     {socialLinks.map((social) => {
@@ -328,7 +334,7 @@ export default function Footer() {
                             <div>
                                 <h4 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                                     <span className="w-1.5 h-5 bg-gradient-to-b from-blue-600 to-indigo-600 rounded-full" />
-                                    We Accept
+                                    {t('footer.weAccept')}
                                 </h4>
                                 <div className="flex flex-wrap gap-2">
                                     {['VISA', 'MC', 'AMEX', 'PayPal'].map((method) => (
@@ -353,7 +359,7 @@ export default function Footer() {
                                 {t('footer.copyright')}
                                 <span className="hidden sm:inline">•</span>
                                 <span className="hidden sm:flex items-center gap-1.5">
-                                    Made with <Heart className="w-4 h-4 text-red-500 fill-current" /> for you
+                                    {t('footer.madeWith')} <Heart className="w-4 h-4 text-red-500 fill-current" /> {t('footer.forYou')}
                                 </span>
                             </p>
 
