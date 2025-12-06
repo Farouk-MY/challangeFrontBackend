@@ -95,9 +95,14 @@ export default function AdminDashboardPage() {
             icon: Package,
             color: 'text-orange-600 dark:text-orange-400',
             bgColor: 'bg-orange-100 dark:bg-orange-900/30',
-            trend: stats?.products.lowStock > 0 ? 'down' : 'up',
+            trend: (stats?.products.lowStock || 0) > 0 ? 'down' : 'up',
         },
     ];
+
+    // Extract values with defaults for cleaner code
+    const lowStock = stats?.products?.lowStock || 0;
+    const outOfStock = stats?.products?.outOfStock || 0;
+    const pendingContacts = stats?.other?.pendingContacts || 0;
 
     return (
         <div className="space-y-8">
@@ -196,7 +201,7 @@ export default function AdminDashboardPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                        {stats?.products.lowStock > 0 && (
+                        {lowStock > 0 && (
                             <div className="flex items-start gap-3 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
                                 <AlertTriangle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
                                 <div className="flex-1">
@@ -204,7 +209,7 @@ export default function AdminDashboardPage() {
                                         Low Stock Alert
                                     </p>
                                     <p className="text-sm text-orange-700 dark:text-orange-300">
-                                        {stats.products.lowStock} products are running low on stock
+                                        {lowStock} products are running low on stock
                                     </p>
                                 </div>
                                 <Button size="sm" variant="ghost" asChild>
@@ -212,7 +217,7 @@ export default function AdminDashboardPage() {
                                 </Button>
                             </div>
                         )}
-                        {stats?.products.outOfStock > 0 && (
+                        {outOfStock > 0 && (
                             <div className="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                                 <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
                                 <div className="flex-1">
@@ -220,7 +225,7 @@ export default function AdminDashboardPage() {
                                         Out of Stock
                                     </p>
                                     <p className="text-sm text-red-700 dark:text-red-300">
-                                        {stats.products.outOfStock} products are out of stock
+                                        {outOfStock} products are out of stock
                                     </p>
                                 </div>
                                 <Button size="sm" variant="ghost" asChild>
@@ -228,7 +233,7 @@ export default function AdminDashboardPage() {
                                 </Button>
                             </div>
                         )}
-                        {stats?.other.pendingContacts > 0 && (
+                        {pendingContacts > 0 && (
                             <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                                 <AlertTriangle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                                 <div className="flex-1">
@@ -236,7 +241,7 @@ export default function AdminDashboardPage() {
                                         New Messages
                                     </p>
                                     <p className="text-sm text-blue-700 dark:text-blue-300">
-                                        {stats.other.pendingContacts} pending contact messages
+                                        {pendingContacts} pending contact messages
                                     </p>
                                 </div>
                                 <Button size="sm" variant="ghost" asChild>
@@ -244,13 +249,11 @@ export default function AdminDashboardPage() {
                                 </Button>
                             </div>
                         )}
-                        {stats?.products.lowStock === 0 &&
-                            stats?.products.outOfStock === 0 &&
-                            stats?.other.pendingContacts === 0 && (
-                                <div className="text-center py-8 text-muted-foreground">
-                                    <p className="text-sm">No alerts at the moment! 🎉</p>
-                                </div>
-                            )}
+                        {lowStock === 0 && outOfStock === 0 && pendingContacts === 0 && (
+                            <div className="text-center py-8 text-muted-foreground">
+                                <p className="text-sm">No alerts at the moment! 🎉</p>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </div>
@@ -310,57 +313,61 @@ export default function AdminDashboardPage() {
                             <LoadingSpinner />
                         </div>
                     ) : salesData?.data?.chartData && salesData.data.chartData.length > 0 ? (
-                        <div className="space-y-4">
-                            {/* Simple Chart Display */}
-                            <div className="grid grid-cols-7 gap-2 h-64">
-                                {salesData.data.chartData.slice(0, 7).map((item: any, index: number) => {
-                                    const maxRevenue = Math.max(
-                                        ...salesData.data.chartData.map((d: any) => d.revenue)
-                                    );
-                                    const height = (item.revenue / maxRevenue) * 100;
-                                    return (
-                                        <div
-                                            key={index}
-                                            className="flex flex-col items-center justify-end gap-2"
-                                        >
-                                            <div className="text-xs text-muted-foreground">
-                                                ${item.revenue.toFixed(0)}
-                                            </div>
-                                            <div
-                                                className="w-full bg-gradient-to-t from-blue-600 to-indigo-600 rounded-t"
-                                                style={{ height: `${height}%` }}
-                                            />
-                                            <div className="text-xs text-muted-foreground">
-                                                {new Date(item.date).toLocaleDateString('en', {
-                                                    month: 'short',
-                                                    day: 'numeric',
-                                                })}
-                                            </div>
+                        (() => {
+                            const chartData = salesData.data.chartData;
+                            const maxRevenue = Math.max(...chartData.map((d: any) => d.revenue));
+
+                            return (
+                                <div className="space-y-4">
+                                    {/* Simple Chart Display */}
+                                    <div className="grid grid-cols-7 gap-2 h-64">
+                                        {chartData.slice(0, 7).map((item: any, index: number) => {
+                                            const height = (item.revenue / maxRevenue) * 100;
+                                            return (
+                                                <div
+                                                    key={index}
+                                                    className="flex flex-col items-center justify-end gap-2"
+                                                >
+                                                    <div className="text-xs text-muted-foreground">
+                                                        ${item.revenue.toFixed(0)}
+                                                    </div>
+                                                    <div
+                                                        className="w-full bg-gradient-to-t from-blue-600 to-indigo-600 rounded-t"
+                                                        style={{ height: `${height}%` }}
+                                                    />
+                                                    <div className="text-xs text-muted-foreground">
+                                                        {new Date(item.date).toLocaleDateString('en', {
+                                                            month: 'short',
+                                                            day: 'numeric',
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                                        <div>
+                                            <p className="text-sm text-muted-foreground">Total Revenue</p>
+                                            <p className="text-2xl font-bold text-green-600">
+                                                $
+                                                {chartData
+                                                    .reduce((sum: number, item: any) => sum + item.revenue, 0)
+                                                    .toFixed(2)}
+                                            </p>
                                         </div>
-                                    );
-                                })}
-                            </div>
-                            <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Total Revenue</p>
-                                    <p className="text-2xl font-bold text-green-600">
-                                        $
-                                        {salesData.data.chartData
-                                            .reduce((sum: number, item: any) => sum + item.revenue, 0)
-                                            .toFixed(2)}
-                                    </p>
+                                        <div>
+                                            <p className="text-sm text-muted-foreground">Total Orders</p>
+                                            <p className="text-2xl font-bold text-blue-600">
+                                                {chartData.reduce(
+                                                    (sum: number, item: any) => sum + item.orders,
+                                                    0
+                                                )}
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Total Orders</p>
-                                    <p className="text-2xl font-bold text-blue-600">
-                                        {salesData.data.chartData.reduce(
-                                            (sum: number, item: any) => sum + item.orders,
-                                            0
-                                        )}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+                            );
+                        })()
                     ) : (
                         <div className="h-64 flex items-center justify-center text-muted-foreground">
                             No sales data available

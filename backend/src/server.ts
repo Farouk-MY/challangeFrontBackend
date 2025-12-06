@@ -29,6 +29,9 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
+app.set('trust proxy', 1); // Add this line
+
+
 // CORS configuration
 app.use(
     cors({

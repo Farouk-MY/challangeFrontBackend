@@ -1,5 +1,19 @@
 import { apiClient } from './client';
-import { ApiResponse, PaginatedResponse, User, Address } from '@/types';
+import { ApiResponse, User, Address } from '@/types';
+
+// Custom response type for getAllUsers
+interface GetAllUsersResponse {
+    success: boolean;
+    data: {
+        users: User[];
+        pagination: {
+            page: number;
+            limit: number;
+            total: number;
+            totalPages: number;
+        };
+    };
+}
 
 export const usersApi = {
     // Get current user profile
@@ -71,9 +85,9 @@ export const usersApi = {
 
     // ===== ADMIN ENDPOINTS =====
 
-    // Get all users (Admin only)
+    // Get all users (Admin only) - Fixed to match actual response structure
     getAllUsers: async (params?: { page?: string; limit?: string; search?: string }) => {
-        const response = await apiClient.get<PaginatedResponse<User[]>>(
+        const response = await apiClient.get<GetAllUsersResponse>(
             '/admin/users',
             { params }
         );

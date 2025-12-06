@@ -31,11 +31,11 @@ interface OrderDetailsDialogProps {
 }
 
 const statusOptions: OrderStatus[] = [
-    'PENDING',
-    'PROCESSING',
-    'SHIPPED',
-    'DELIVERED',
-    'CANCELLED',
+    OrderStatus.PENDING,
+    OrderStatus.PROCESSING,
+    OrderStatus.SHIPPED,
+    OrderStatus.DELIVERED,
+    OrderStatus.CANCELLED,
 ];
 
 export default function OrderDetailsDialog({
@@ -258,7 +258,7 @@ export default function OrderDetailsDialog({
                                     </div>
                                 </div>
 
-                                {order.status !== 'PENDING' && (
+                                {order.status !== OrderStatus.PENDING && (
                                     <div className="flex items-start gap-3">
                                         <div className="w-2 h-2 bg-blue-500 rounded-full mt-2" />
                                         <div className="flex-1">
